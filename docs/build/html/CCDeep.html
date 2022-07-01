@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CCDeep package &mdash; CCDeep 1.2 文档</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="搜索" href="search.html" />
+    <link rel="next" title="CCDeep.ResNet package" href="CCDeep.ResNet.html" />
+    <link rel="prev" title="CCDeep" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> CCDeep
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="在文档中搜索" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">CCDeep</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">CCDeep package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="CCDeep.ResNet.html">CCDeep.ResNet package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="CCDeep.tools.html">CCDeep.tools package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-CCDeep.config">CCDeep.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-CCDeep.evaluate">CCDeep.evaluate module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ccdeep-main-module">CCDeep.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-CCDeep.prediction">CCDeep.prediction module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-CCDeep.prepare_data">CCDeep.prepare_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-CCDeep.refiner">CCDeep.refiner module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-CCDeep.resolver">CCDeep.resolver module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-CCDeep.track">CCDeep.track module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-CCDeep.train">CCDeep.train module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ccdeep-train-segment-module">CCDeep.train_segment module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-CCDeep.utils">CCDeep.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-CCDeep">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CCDeep</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">CCDeep</a> &raquo;</li>
+      <li>CCDeep package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/CCDeep.rst.txt" rel="nofollow"> 查看页面源码</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ccdeep-package">
+<h1>CCDeep package<a class="headerlink" href="#ccdeep-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="CCDeep.ResNet.html">CCDeep.ResNet package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="CCDeep.ResNet.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CCDeep.ResNet.html#module-CCDeep.ResNet.residual_block">CCDeep.ResNet.residual_block module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CCDeep.ResNet.html#module-CCDeep.ResNet.resnet">CCDeep.ResNet.resnet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CCDeep.ResNet.html#module-CCDeep.ResNet">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="CCDeep.tools.html">CCDeep.tools package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="CCDeep.tools.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CCDeep.tools.html#module-CCDeep.tools.augmentation">CCDeep.tools.augmentation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CCDeep.tools.html#module-CCDeep.tools.generate_dataset">CCDeep.tools.generate_dataset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CCDeep.tools.html#module-CCDeep.tools.split_dataset">CCDeep.tools.split_dataset module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CCDeep.tools.html#module-CCDeep.tools">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-CCDeep.config">
+<span id="ccdeep-config-module"></span><h2>CCDeep.config module<a class="headerlink" href="#module-CCDeep.config" title="Permalink to this heading"></a></h2>
+<p>项目的一些基础参数配置， 包括训练数据集的存放位置，模型的存放位置等</p>
+</section>
+<section id="module-CCDeep.evaluate">
+<span id="ccdeep-evaluate-module"></span><h2>CCDeep.evaluate module<a class="headerlink" href="#module-CCDeep.evaluate" title="Permalink to this heading"></a></h2>
+<p>用于评估和检验输出模型的预测能力</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.evaluate.read_img">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.evaluate.</span></span><span class="sig-name descname"><span class="pre">read_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic_img_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mcy_img_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.evaluate.read_img" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="ccdeep-main-module">
+<h2>CCDeep.main module<a class="headerlink" href="#ccdeep-main-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-CCDeep.prediction">
+<span id="ccdeep-prediction-module"></span><h2>CCDeep.prediction module<a class="headerlink" href="#module-CCDeep.prediction" title="Permalink to this heading"></a></h2>
+<p>分割细胞图像并预测细胞周期</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.prediction.Prediction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.prediction.</span></span><span class="sig-name descname"><span class="pre">Prediction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mcy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rois</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Prediction" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Prediction.exportResult">
+<span class="sig-name descname"><span class="pre">exportResult</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Prediction.exportResult" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Prediction.getCell">
+<span class="sig-name descname"><span class="pre">getCell</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Prediction.getCell" title="永久链接至目标"></a></dt>
+<dd><p>从分割结果中获取每个细胞的DIC和PCNA的图像信息，并返回相应的Data对象列表，
+同时会过滤掉过于小的实例，一并返回过滤后的roi信息</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Prediction.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#CCDeep.prediction.Prediction.predict" title="永久链接至目标"></a></dt>
+<dd><p>返回单帧图像中所有细胞的预测周期， 以及过滤后的所有细胞轮廓信息</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Prediction.predict_phase">
+<span class="sig-name descname"><span class="pre">predict_phase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Prediction.predict_phase" title="永久链接至目标"></a></dt>
+<dd><p>利用预测器预测细胞周期， 接受一个数组图像数据做输入</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.prediction.Predictor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.prediction.</span></span><span class="sig-name descname"><span class="pre">Predictor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Predictor" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>一个预测器，用于预测每个细胞所处的细胞周期，默认不需要提供任何参数，如需改变，请修改config.py相应的值</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Predictor.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Predictor.predict" title="永久链接至目标"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">参数</dt>
+<dd class="field-odd"><p><strong>images</strong> – 一个包含多张图片的数组或列表，其形状为[image_count, image_width, image_height, image_channels]</p>
+</dd>
+<dt class="field-even">返回</dt>
+<dd class="field-even"><p>每个细胞的预测周期组成的列表</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmentation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.prediction.</span></span><span class="sig-name descname"><span class="pre">Segmentation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_mcy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_dic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imagename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segmenter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi_save_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_save_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Segmentation" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmentation.details">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">details</span></span><a class="headerlink" href="#CCDeep.prediction.Segmentation.details" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmentation.export_predict_result">
+<span class="sig-name descname"><span class="pre">export_predict_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Segmentation.export_predict_result" title="永久链接至目标"></a></dt>
+<dd><p>导出分割和预测细胞周期到json文件中</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmentation.labels">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">labels</span></span><a class="headerlink" href="#CCDeep.prediction.Segmentation.labels" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmentation.predict_result">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">predict_result</span></span><a class="headerlink" href="#CCDeep.prediction.Segmentation.predict_result" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmentation.rois">
+<span class="sig-name descname"><span class="pre">rois</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Segmentation.rois" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmentation.save_labels">
+<span class="sig-name descname"><span class="pre">save_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_save_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Segmentation.save_labels" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmentation.save_rois">
+<span class="sig-name descname"><span class="pre">save_rois</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_save_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Segmentation.save_rois" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmentation.segment">
+<span class="sig-name descname"><span class="pre">segment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Segmentation.segment" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmenter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.prediction.</span></span><span class="sig-name descname"><span class="pre">Segmenter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">segment_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Segmenter" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.prediction.Segmenter.segment">
+<span class="sig-name descname"><span class="pre">segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.Segmenter.segment" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.prediction.readTif">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.prediction.</span></span><span class="sig-name descname"><span class="pre">readTif</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.readTif" title="永久链接至目标"></a></dt>
+<dd><p>读取并逐帧返回图像</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.prediction.segment">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.prediction.</span></span><span class="sig-name descname"><span class="pre">segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pcna</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">os.PathLike</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">os.PathLike</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">os.PathLike</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segment_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prediction.segment" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-CCDeep.prepare_data">
+<span id="ccdeep-prepare-data-module"></span><h2>CCDeep.prepare_data module<a class="headerlink" href="#module-CCDeep.prepare_data" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.prepare_data.generate_datasets">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.prepare_data.</span></span><span class="sig-name descname"><span class="pre">generate_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_mcy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_mcy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mcy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prepare_data.generate_datasets" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.prepare_data.generate_datasets_20x">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.prepare_data.</span></span><span class="sig-name descname"><span class="pre">generate_datasets_20x</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prepare_data.generate_datasets_20x" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.prepare_data.generate_datasets_60x">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.prepare_data.</span></span><span class="sig-name descname"><span class="pre">generate_datasets_60x</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prepare_data.generate_datasets_60x" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.prepare_data.get_dataset">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.prepare_data.</span></span><span class="sig-name descname"><span class="pre">get_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_root_dir_mcy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prepare_data.get_dataset" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.prepare_data.get_images_and_labels">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.prepare_data.</span></span><span class="sig-name descname"><span class="pre">get_images_and_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prepare_data.get_images_and_labels" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.prepare_data.read_img">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.prepare_data.</span></span><span class="sig-name descname"><span class="pre">read_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prepare_data.read_img" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.prepare_data.wrap_function">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.prepare_data.</span></span><span class="sig-name descname"><span class="pre">wrap_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mcy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.prepare_data.wrap_function" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-CCDeep.refiner">
+<span id="ccdeep-refiner-module"></span><h2>CCDeep.refiner module<a class="headerlink" href="#module-CCDeep.refiner" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.refiner.</span></span><span class="sig-name descname"><span class="pre">Refiner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxBG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minM</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SVM'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_mt_F</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_mt_T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_train</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilate_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aso_trh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">svm_c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.associate">
+<span class="sig-name descname"><span class="pre">associate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.associate" title="永久链接至目标"></a></dt>
+<dd><p>Main algorithm to associate parent and daughter relationship.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.break_mitosis">
+<span class="sig-name descname"><span class="pre">break_mitosis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.break_mitosis" title="永久链接至目标"></a></dt>
+<dd><p>Break mitosis tracks; iterate until no track is broken.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.daug_app_in_par_mask">
+<span class="sig-name descname"><span class="pre">daug_app_in_par_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daug</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.daug_app_in_par_mask" title="永久链接至目标"></a></dt>
+<dd><p>Check if daughter appears in the mask of parent</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>par (int): parent track ID
+daug (int): daughter track ID</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.doTrackRefine">
+<span class="sig-name descname"><span class="pre">doTrackRefine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.doTrackRefine" title="永久链接至目标"></a></dt>
+<dd><p>Perform track refinement process</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>If run in TRH/SVM mode, will return annotation table, tracked object table and mitosis directory.
+If run in TRAIN mode, will only return tracked object table after smoothing, mitosis breaking.
+for manual inspection. After determining the training instance, generate training data through.
+get_SVM_train(sample).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.extract_features">
+<span class="sig-name descname"><span class="pre">extract_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">par_pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daug_pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_outlier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.extract_features" title="永久链接至目标"></a></dt>
+<dd><p>Extract Input Features for the classifier</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>par_pool (list): Parent pool.
+daug_pool (list): Daughter pool.
+remove_outlier (list[int]): Remove outlier of columns in the feature map.
+normalize (bool): Normalize each column.
+sample (numpy.ndarray): Training mode only, supply positive sample information, will add y as 2nd output.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.extract_pools">
+<span class="sig-name descname"><span class="pre">extract_pools</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_par</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_daug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.extract_pools" title="永久链接至目标"></a></dt>
+<dd><p>Extract potential parent and daughter pool</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.extract_train_from_break">
+<span class="sig-name descname"><span class="pre">extract_train_from_break</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ipts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mt_dic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.extract_train_from_break" title="永久链接至目标"></a></dt>
+<dd><p>Extract broken mitosis information to train model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.getAsoInput">
+<span class="sig-name descname"><span class="pre">getAsoInput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daughter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.getAsoInput" title="永久链接至目标"></a></dt>
+<dd><p>Generate SVM classifier input for track 1 &amp; 2.</p>
+<dl>
+<dt>Args:</dt><dd><p>parent (int): parent track ID.
+daughter (int): daughter track ID.</p>
+</dd>
+<dt>Returns:</dt><dd><p>Input vector of the classifier:
+- [distance_diff, frame_diff]</p>
+<p>Some parameters are normalized with dataset specific features:
+- distance_diff /= ave_displace
+- frame_diff /= sample_freq</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.getMeanDisplace">
+<span class="sig-name descname"><span class="pre">getMeanDisplace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.getMeanDisplace" title="永久链接至目标"></a></dt>
+<dd><p>Calculate mean displace of each track normalized with frame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.getMtransition">
+<span class="sig-name descname"><span class="pre">getMtransition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trackId</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'entry'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.getMtransition" title="永久链接至目标"></a></dt>
+<dd><p>Get mitosis transition time by trackId</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>trackId (int): track ID
+direction (str): either ‘entry’ or ‘exit’, mitosis entry or exit
+skip (int): escape frames from <cite>deduce_transition</cite> method</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.get_SVM_train">
+<span class="sig-name descname"><span class="pre">get_SVM_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.get_SVM_train" title="永久链接至目标"></a></dt>
+<dd><p>Save training data for SVM classifier of this particular dataset.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>sample (numpy.ndarray): Optional matrix of shape (sample, (parent ID, daughter ID, …)). If not supplied,</dt><dd><p>will generate directly from mitosis-broken tracked object table. (GT with mitosis relationship)</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>(numpy.ndarray): Input feature map.
+(numpy.ndarray): Ground truth label.
+(numpy.ndarray): Track ID of the corresponding feature (row).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.get_parent_mask">
+<span class="sig-name descname"><span class="pre">get_parent_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.get_parent_mask" title="永久链接至目标"></a></dt>
+<dd><p>Extract parent mask, begin from mitosis entry, end with parent disappearance</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>p (int): parent track ID</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.plainPredict">
+<span class="sig-name descname"><span class="pre">plainPredict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ipts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.plainPredict" title="永久链接至目标"></a></dt>
+<dd><p>Generate cost of each potential daughter-parent pair (sample).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.register_mitosis">
+<span class="sig-name descname"><span class="pre">register_mitosis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ann</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mt_dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parentId</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daughterId</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_exit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_dif</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_entry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.register_mitosis" title="永久链接至目标"></a></dt>
+<dd><p>Register parent and dduahgter information to ann and mt_dic</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.register_track">
+<span class="sig-name descname"><span class="pre">register_track</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.register_track" title="永久链接至目标"></a></dt>
+<dd><p>Register track annotation table</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.render_emerging">
+<span class="sig-name descname"><span class="pre">render_emerging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_range</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.render_emerging" title="永久链接至目标"></a></dt>
+<dd><p>Render emerging phase</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.revert">
+<span class="sig-name descname"><span class="pre">revert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ann</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mt_dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parentId</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daughterId</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.revert" title="永久链接至目标"></a></dt>
+<dd><p>Remove information of a relationship registered to ann and mt_dic</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.setSVMpath">
+<span class="sig-name descname"><span class="pre">setSVMpath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_train</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.setSVMpath" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.smooth_track">
+<span class="sig-name descname"><span class="pre">smooth_track</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.smooth_track" title="永久链接至目标"></a></dt>
+<dd><p>Re-assign cell cycle classification based on smoothed confidence.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.refiner.Refiner.update_table_with_mt">
+<span class="sig-name descname"><span class="pre">update_table_with_mt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.Refiner.update_table_with_mt" title="永久链接至目标"></a></dt>
+<dd><p>Update tracked object table with information in self.mt_dic (mitosis lookup dict).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.refiner.deduce_transition">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.refiner.</span></span><span class="sig-name descname"><span class="pre">deduce_transition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_tar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">escape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casual_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.deduce_transition" title="永久链接至目标"></a></dt>
+<dd><p>Deduce mitosis exit and entry based on adaptive searching</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>l (list): list of the target cell cycle phase
+tar (str): target cell cycle phase
+min_tar (int): minimum duration of an entire target phase
+confidence (numpy.ndarray): matrix of confidence
+max_res (int): maximum accumulative duration of unwanted phase
+escape (int): do not consider the first n instances
+casual_end (bool): at the end of the track, whether loosen criteria of a match</p>
+</dd>
+<dt>Returns:</dt><dd><p>tuple: two indices of the classification list corresponding to entry and exit</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.refiner.dist">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.refiner.</span></span><span class="sig-name descname"><span class="pre">dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.dist" title="永久链接至目标"></a></dt>
+<dd><p>Calculate distance of a set of coordinates</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.refiner.get_outlier">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.refiner.</span></span><span class="sig-name descname"><span class="pre">get_outlier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.refiner.get_outlier" title="永久链接至目标"></a></dt>
+<dd><p>Get outlier index in an array, specify target column</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>array (numpy.ndarray): original array
+col_ids ([int]): target columns to remove outliers. Default all</p>
+</dd>
+<dt>Returns:</dt><dd><p>index of row containing at least one outlier</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-CCDeep.resolver">
+<span id="ccdeep-resolver-module"></span><h2>CCDeep.resolver module<a class="headerlink" href="#module-CCDeep.resolver" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.resolver.Resolver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.resolver.</span></span><span class="sig-name descname"><span class="pre">Resolver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ann</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mt_dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxBG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minM</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minLineage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impreciseExit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G2_trh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.Resolver" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.resolver.Resolver.check_trans_integrity">
+<span class="sig-name descname"><span class="pre">check_trans_integrity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.Resolver.check_trans_integrity" title="永久链接至目标"></a></dt>
+<dd><p>Check track transition integrity. If transition other than G1-&gt;S; S-&gt;G2, G2-&gt;M, M-&gt;G1 found, do not resolve.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.resolver.Resolver.doResolve">
+<span class="sig-name descname"><span class="pre">doResolve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.Resolver.doResolve" title="永久链接至目标"></a></dt>
+<dd><p>Main function of class resolver.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>pandas.DataFrame: tracked object table with additional column ‘resolved_class’.
+pandas.DataFrame: phase table with cell cycle durations.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.resolver.Resolver.doResolvePhase">
+<span class="sig-name descname"><span class="pre">doResolvePhase</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.Resolver.doResolvePhase" title="永久链接至目标"></a></dt>
+<dd><p>Resolve phase durations</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.resolver.Resolver.getAnn">
+<span class="sig-name descname"><span class="pre">getAnn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.Resolver.getAnn" title="永久链接至目标"></a></dt>
+<dd><p>Add an annotation column to tracked object table
+The annotation format is track ID - (parentTrackId, optional) - resolved_class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.resolver.Resolver.resolveArrest">
+<span class="sig-name descname"><span class="pre">resolveArrest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G2_trh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.Resolver.resolveArrest" title="永久链接至目标"></a></dt>
+<dd><dl class="simple">
+<dt>Determine G1/G2 arrest tracks.</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>If <cite>G2_trh</cite> is supplied, determine G2 based on background-subtracted mean of the track</dt><dd><p>(averaged across frames).</p>
+</dd>
+</dl>
+</li>
+<li><p>If <cite>G2_trh</cite> is not supplied, assign G1 or G2 classification according to 2-center K-mean.</p></li>
+</ul>
+</dd>
+<dt>Args:</dt><dd><p>G2_trh (int): int between 1-255, above the threshold will be classified as G2.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.resolver.Resolver.resolveLineage">
+<span class="sig-name descname"><span class="pre">resolveLineage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lineage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.Resolver.resolveLineage" title="永久链接至目标"></a></dt>
+<dd><p>Resolve all tracks in a lineage recursively
+main (int): the parent track ID of current search</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.resolver.Resolver.resolveTrack">
+<span class="sig-name descname"><span class="pre">resolveTrack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_entry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_exit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.Resolver.resolveTrack" title="永久链接至目标"></a></dt>
+<dd><p>Resolve single track.</p>
+<dl>
+<dt>Args:</dt><dd><p>trk (pandas.DataFrame): track table
+m_entry (int): time of mitosis entry corresponding to ‘frame’ column in table
+m_exit (int): time of mitosis exit corresponding to ‘frame’ column in table</p>
+<blockquote>
+<div><p>If no m time supplied, only treat as G1/G2/S track.
+Arrested track not resolved, return full G1/G2 list.</p>
+</div></blockquote>
+</dd>
+<dt>Returns:</dt><dd><p>pandas.DataFrame table with addition column of resolved class</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.resolver.get_rsv_input_gt">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.resolver.</span></span><span class="sig-name descname"><span class="pre">get_rsv_input_gt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'predicted_class'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G2_trh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_cls_GT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.get_rsv_input_gt" title="永久链接至目标"></a></dt>
+<dd><p>Deduce essential input of resolver from a ground truth.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.resolver.list_dist">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.resolver.</span></span><span class="sig-name descname"><span class="pre">list_dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.list_dist" title="永久链接至目标"></a></dt>
+<dd><p>Count difference between elements of two lists.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>a (list): classifications with method A
+b (list): classifications with method B</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.resolver.resolve_from_gt">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.resolver.</span></span><span class="sig-name descname"><span class="pre">resolve_from_gt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'predicted_class'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_gt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G2_trh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_cls_GT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minM</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minLineage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.resolver.resolve_from_gt" title="永久链接至目标"></a></dt>
+<dd><p>Resolve cell cycle phase from the ground truth. Wrapper of <cite>get_rsv_input_gt()</cite>.</p>
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt>track (pandas.DataFrame): data frame of each object each row, must have following columns:</dt><dd><ul class="simple">
+<li><p>trackId, frame, parentTrackId, &lt;ground truth classification column&gt;</p></li>
+</ul>
+</dd>
+</dl>
+<p>gt_name (str): refers to the column in track that corresponds to ground truth classification.
+extra_gt (str): refers to the column in track that has G2 ground truth if <cite>gt_name</cite> does not. See notes below.
+G2_trh (int): intensity threshold for classifying G2 phase (for arrest tracks only).
+no_cls_GT (bool): Set to <cite>true</cite> if no classification ground truth is provided.</p>
+<blockquote>
+<div><p>Will resolve based on current classifications.</p>
+</div></blockquote>
+<p>minG (int): minimum G phase frame length (default 1).
+minS (int): minimum S phase frame length (default 1).
+minM (int): minimum M phase frame length (default 1).
+minLineage (int): minimum lineage frame length to resolve (default 0, resolve all tracks).</p>
+</dd>
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>If do not want G2 to be classified based on thresholding, rather, based on ground truth classification.</p></li>
+</ul>
+<p>Simply leave <cite>G2_trh=None</cite> and the threshold will be calculated as the smallest average intensity of G2 phase
+in labeled tracks (outlier smaller than mena - 3*sd excluded).</p>
+<ul class="simple">
+<li><p>If the ground truth column does not contain <cite>G2</cite> instances, tell the program to look at</p></li>
+</ul>
+<p>an extra partially G2 ground truth column like <cite>resolved_class</cite> to extract information. This may be useful when
+<cite>predicted_class</cite> has been corrected from the Correction Interface which only contains G1/G2 but not G2. In this
+case, you can also assign <cite>resolved_class</cite> as the ground truth classification column. Both will work.</p>
+<ul class="simple">
+<li><p>If <cite>mean_intensity</cite> or <cite>background_mean</cite> column is not in the table, will set the threshold to 100.</p></li>
+<li><p>Use at own risk if the input classification in not reliable.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-CCDeep.track">
+<span id="ccdeep-track-module"></span><h2>CCDeep.track module<a class="headerlink" href="#module-CCDeep.track" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.track.expand_bbox">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.track.</span></span><span class="sig-name descname"><span class="pre">expand_bbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.track.expand_bbox" title="永久链接至目标"></a></dt>
+<dd><p>Expand bounding box by factor times.</p>
+<dl>
+<dt>Args:</dt><dd><p>bbox (tuple): (x1, y1, x2, y2).
+factor (float): positive value, expand height and width by multiplying the factor.</p>
+<blockquote>
+<div><p>Round if result is not integer.
+The output shape will be (factor + 1) ** 2 times of the original size.</p>
+</div></blockquote>
+<p>limit (tuple): (x_max, y_max), limit values to avoid boundary crush.</p>
+</dd>
+<dt>Returns:</dt><dd><p>(tuple): new bounding box (x1, y1, x2, y2).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.track.getDetectInput">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.track.</span></span><span class="sig-name descname"><span class="pre">getDetectInput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pcna</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.track.getDetectInput" title="永久链接至目标"></a></dt>
+<dd><p>Generate pcna-mScarlet and DIC channel to RGB format for detectron2 model prediction</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>pcna (numpy.ndarray): uint16 PCNA-mScarlet image stack (T*H*W).
+dic (numpy.ndarray): uint16 DIC or phase contrast image stack.
+gamma (float): gamma adjustment, &gt;0, default 0.8.
+sat (float): percent saturation, 0~100, default 0.
+torch_gpu (bool): use torch to speed up calculation.</p>
+</dd>
+<dt>Returns:</dt><dd><p>(numpy.ndarray): uint8 composite image (T*H*W*C)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.track.json2mask">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.track.</span></span><span class="sig-name descname"><span class="pre">json2mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_phase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.track.json2mask" title="永久链接至目标"></a></dt>
+<dd><p>Draw mask according to VIA2 annotation and summarize information</p>
+<dl>
+<dt>Args:</dt><dd><p>ip (str): input directory of the json file.
+out (str): optonal, output directory of the image and summary table.
+height (int): image height.
+width (int): image width.
+label_phase (bool): whether to label the mask with values corresponding to cell cycle classification or not.</p>
+<blockquote>
+<div><p>If true, will label as the following values: ‘G1/G2’:10, ‘S’:50, ‘M’:100;
+If false, will output binary masks.</p>
+</div></blockquote>
+<p>mask_only (bool): whether to suppress file output and return mask only.</p>
+</dd>
+<dt>Outputs:</dt><dd><p><cite>png</cite> files of object masks.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.track.track">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.track.</span></span><span class="sig-name descname"><span class="pre">track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">displace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap_fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.track.track" title="永久链接至目标"></a></dt>
+<dd><p>Track and relabel mask with trackID.</p>
+<dl>
+<dt>Args:</dt><dd><dl>
+<dt>df (pandas.DataFrame): Data frame with fields:</dt><dd><ul class="simple">
+<li><p>Center_of_the_object_0: x location of each object.</p></li>
+<li><p>Center_of_the_object_1: y location of each obj</p></li>
+</ul>
+<p>ect.
+- frame: time location.
+- BF_mean: mean intensity of bright field image.
+- BF_std: standard deviation of bright field image.
+- (other optional columns)</p>
+</dd>
+</dl>
+<p>displace (int): maximum distance an object can move between frames.
+gap_fill (int): temporal filling fo tracks.</p>
+</dd>
+<dt>Return:</dt><dd><p>(pandas.DataFrame): tracked object table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.track.track_GT_json">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.track.</span></span><span class="sig-name descname"><span class="pre">track_GT_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fp_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">displace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap_fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp_intensity_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp_pcna</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp_bf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.track.track_GT_json" title="永久链接至目标"></a></dt>
+<dd><p>Track ground truth VIA json file. Wrapper of <cite>track_mask()</cite></p>
+<dl>
+<dt>Args:</dt><dd><p>fp_json (str): file path to the json file.
+height (int): pixel height of the mask corresponding to GT json.
+width (int): pixel width of the mask corresponding to GT json.
+displace (int): distance restriction, see <cite>track()</cite>.
+gap_fill (int): time restriction, see <cite>track()</cite>.
+size_min (int): remove object smaller then some size, in case the mask labeling is not precise.
+fp_intensity_image (str): optional image file path, if supplied, will extract fore/backgound PCNA intensity, and</p>
+<blockquote>
+<div><p>bright field intensity/std for tracking.
+Must has the same shape as mask, so will override height and width.</p>
+</div></blockquote>
+<p>fp_pcna (str): optional file path to PCNA channel image stack.
+fp_bf (str): optional file path to bright field image stack.
+sat (float): saturated pixel percentage when rescaling intensity image. If <cite>None</cite>, no rescaling will be done.
+gamma (float): gamma-correction factor. If <cite>None</cite>, will not perform.</p>
+</dd>
+<dt>Returns:</dt><dd><p>(pandas.DataFrame): tracked object table.
+(mask_lbd): mask with each frame labeled with object IDs.</p>
+</dd>
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>If supplied with <cite>fp_intensity_image</cite> (composite image stack), will omit <cite>fp_pcna</cite> or <cite>fp_bf</cite>.</p></li>
+<li><p><cite>fp_pcna</cite> and <cite>fp_bf</cite> must be supplied at the same time.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.track.track_mask">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.track.</span></span><span class="sig-name descname"><span class="pre">track_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">displace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap_fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_phase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PCNA_intensity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BF_intensity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.track.track_mask" title="永久链接至目标"></a></dt>
+<dd><p>Track binary mask objects.</p>
+<dl>
+<dt>Args:</dt><dd><p>mask (numpy.ndarray): cell mask, can either be binary or labeled with cell cycle phases.
+displace (int): distance restriction, see <cite>track()</cite>.
+gap_fill (int): time restriction, see <cite>track()</cite>.
+render_phase (bool): whether to deduce cell cycle phase from the labeled mask.
+size_min (int): remove object smaller then some size, in case the mask labeling is not precise.
+PCNA_intensity (numpy.ndarray): optional, if supplied, will extract fore/backgound PCNA intensity,
+BF_intensity (numpy.ndarray): optional, if supplied, will extract bright field intensity &amp; std for tracking.</p>
+<blockquote>
+<div><p>First three channels must have same length as the mask.</p>
+</div></blockquote>
+</dd>
+<dt>Returns:</dt><dd><p>(pandas.DataFrame): tracked object table.
+(mask_lbd): mask with each frame labeled with object IDs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-CCDeep.train">
+<span id="ccdeep-train-module"></span><h2>CCDeep.train module<a class="headerlink" href="#module-CCDeep.train" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.train.get_model">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.train.</span></span><span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.train.get_model" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="ccdeep-train-segment-module">
+<h2>CCDeep.train_segment module<a class="headerlink" href="#ccdeep-train-segment-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-CCDeep.utils">
+<span id="ccdeep-utils-module"></span><h2>CCDeep.utils module<a class="headerlink" href="#module-CCDeep.utils" title="Permalink to this heading"></a></h2>
+<p>适用于图像分割处理的各种函数</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.utils.Augment">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">Augment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.Augment" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.Augment.addNoise">
+<span class="sig-name descname"><span class="pre">addNoise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.Augment.addNoise" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.Augment.adjustBright">
+<span class="sig-name descname"><span class="pre">adjustBright</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.Augment.adjustBright" title="永久链接至目标"></a></dt>
+<dd><p>gamma &gt; 1, bright; gamma &lt; 1. dark</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.Augment.flipHorizontal">
+<span class="sig-name descname"><span class="pre">flipHorizontal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.Augment.flipHorizontal" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.Augment.flipVertical">
+<span class="sig-name descname"><span class="pre">flipVertical</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.Augment.flipVertical" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.Augment.rotate">
+<span class="sig-name descname"><span class="pre">rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.Augment.rotate" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.utils.ConverterXY">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">ConverterXY</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.ConverterXY" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>根据掩膜的坐标，将其转化为via可识读的json文件
+for example:
+&gt;&gt;&gt; co = [[1, 2, 3, 4], [5, 6, 7, 8]]
+&gt;&gt;&gt; img = ‘test.png’
+&gt;&gt;&gt; con = ConverterXY(img, co)
+&gt;&gt;&gt; with open(‘test.json’, ‘w’) as f:
+&gt;&gt;&gt;     json.dump(con.json, f)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.ConverterXY.generate_regions">
+<span class="sig-name descname"><span class="pre">generate_regions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'G1/G2'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.ConverterXY.generate_regions" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="CCDeep.utils.ConverterXY.json">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">json</span></span><a class="headerlink" href="#CCDeep.utils.ConverterXY.json" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.ConverterXY.roi2json">
+<span class="sig-name descname"><span class="pre">roi2json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.ConverterXY.roi2json" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.utils.Data">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">Data</span></span><a class="headerlink" href="#CCDeep.utils.Data" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="CCDeep.utils.Data.image_dic">
+<span class="sig-name descname"><span class="pre">image_dic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#CCDeep.utils.Data.image_dic" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="CCDeep.utils.Data.image_id">
+<span class="sig-name descname"><span class="pre">image_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#CCDeep.utils.Data.image_id" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="CCDeep.utils.Data.image_mcy">
+<span class="sig-name descname"><span class="pre">image_mcy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#CCDeep.utils.Data.image_mcy" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="CCDeep.utils.Data.phase">
+<span class="sig-name descname"><span class="pre">phase</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#CCDeep.utils.Data.phase" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.utils.DataGenerator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">DataGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_data_mcy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_data_dic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.DataGenerator" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>为分类算法生成训练数据，其数据结构为X_train = [img array], Y_train = [phase list]</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.DataGenerator.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.DataGenerator.generate" title="永久链接至目标"></a></dt>
+<dd><p>生成Data实例返回</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">JsonParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">np.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>解析标注json文件</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.addPhase">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">addPhase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_map</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser.addPhase" title="永久链接至目标"></a></dt>
+<dd><p>添加预测周期</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.coordinate2contours">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coordinate2contours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coord</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser.coordinate2contours" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.getContourArea">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">getContourArea</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser.getContourArea" title="永久链接至目标"></a></dt>
+<dd><p>返回细胞轮廓的面积大小</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.getCoordinate">
+<span class="sig-name descname"><span class="pre">getCoordinate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser.getCoordinate" title="永久链接至目标"></a></dt>
+<dd><p>获取某个细胞的轮廓坐标</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.getCoordinates">
+<span class="sig-name descname"><span class="pre">getCoordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser.getCoordinates" title="永久链接至目标"></a></dt>
+<dd><p>获取单张图片中所有细胞实例的轮廓坐标</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.getIdFromCoordinate">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">getIdFromCoordinate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser.getIdFromCoordinate" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.getPhase">
+<span class="sig-name descname"><span class="pre">getPhase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser.getPhase" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.imageName">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">imageName</span></span><a class="headerlink" href="#CCDeep.utils.JsonParser.imageName" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.setIdForCell">
+<span class="sig-name descname"><span class="pre">setIdForCell</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser.setIdForCell" title="永久链接至目标"></a></dt>
+<dd><p>为每个细胞设置一个独一无二的id， 依据的是细胞的坐标, id为坐标数组的MD5值，
+同时，添加全局变量idMap字典，细胞id为键，坐标为值</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.setPhase">
+<span class="sig-name descname"><span class="pre">setPhase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser.setPhase" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.utils.JsonParser.setPhaseMap">
+<span class="sig-name descname"><span class="pre">setPhaseMap</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.JsonParser.setPhaseMap" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.utils.coordinate2mask">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">coordinate2mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">np.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">np.ndarray</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">np.ndarray</span></span></span><a class="headerlink" href="#CCDeep.utils.coordinate2mask" title="永久链接至目标"></a></dt>
+<dd><p>根据轮廓坐标绘制mask, 如果只传入一组轮廓坐标值，请务必将其置于列表中传入函数，
+例如， coord = ([x1 x2 … xn], [y1 y2 … yn]),调用时请按照coordinate2mask([coord])调用</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.utils.deduce_transition">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">deduce_transition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_tar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">escape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casual_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.deduce_transition" title="永久链接至目标"></a></dt>
+<dd><p>Deduce mitosis exit and entry based on adaptive searching</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>l (list): list of the target cell cycle phase
+tar (str): target cell cycle phase
+min_tar (int): minimum duration of an entire target phase
+confidence (numpy.ndarray): matrix of confidence
+max_res (int): maximum accumulative duration of unwanted phase
+escape (int): do not consider the first n instances
+casual_end (bool): at the end of the track, whether loosen criteria of a match</p>
+</dd>
+<dt>Returns:</dt><dd><p>tuple: two indices of the classification list corresponding to entry and exit</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.utils.divideImage">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">divideImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#CCDeep.utils.divideImage" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.utils.extractRoiFromImg">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">extractRoiFromImg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">np.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">np.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">np.ndarray</span></span></span><a class="headerlink" href="#CCDeep.utils.extractRoiFromImg" title="永久链接至目标"></a></dt>
+<dd><p>根据掩膜提取原始图像中的区域, 注意只能是单通道图，如果是rgb，请先转化为灰度图
+:param images: 原始图像
+:param mask: 掩膜文件
+:return: 单个细胞图像数据</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.utils.findM">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">findM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gt_cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'begin'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.findM" title="永久链接至目标"></a></dt>
+<dd><p>Find M exit/entry from ground truth classification.</p>
+<p>The method assumes that all mitosis classification is continuous, therefore only suitable.
+for processing classification ground truth. For processing prediction, use <cite>pcnaDeep.refiner.deduce_transition</cite>.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>gt_cls (list): list of classifications.
+direction (str): begin/end, search M from which terminal of the classification list.</p>
+</dd>
+<dt>Returns:</dt><dd><p>int: index of the mitosis entry/exit.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.utils.find_daugs">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">find_daugs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.find_daugs" title="永久链接至目标"></a></dt>
+<dd><p>Return list of daughters according to certain parent track ID.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>track (pandas.DataFrame): tracked object table.
+track_id (int): track ID.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.utils.find_positions">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">find_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.find_positions" title="永久链接至目标"></a></dt>
+<dd><p>寻到到每个细胞的外接矩形边界坐标
+:param array: 单个细胞图像矩阵
+:param blank: 留白边界
+:return: 顶点坐标</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.utils.json2mask">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">json2mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.json2mask" title="永久链接至目标"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">参数</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filepath</strong> – 需要转化的json文件路径</p></li>
+<li><p><strong>raw</strong> – json文件包含的图片所在目录</p></li>
+<li><p><strong>mask</strong> – 生成的掩膜文件保存目录</p></li>
+</ul>
+</dd>
+<dt class="field-even">返回</dt>
+<dd class="field-even"><p>如果转化成功，返回True</p>
+</dd>
+</dl>
+<p>for example:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.utils.tif2png">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.utils.</span></span><span class="sig-name descname"><span class="pre">tif2png</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">png_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.utils.tif2png" title="永久链接至目标"></a></dt>
+<dd><p>将tif stack 转化为png</p>
+</dd></dl>
+
+</section>
+<section id="module-CCDeep">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-CCDeep" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="CCDeep" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> 上一页</a>
+        <a href="CCDeep.ResNet.html" class="btn btn-neutral float-right" title="CCDeep.ResNet package" accesskey="n" rel="next">下一页 <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2022, Frozenleaves.</p>
+  </div>
+
+  利用 <a href="https://www.sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">主题</a>
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

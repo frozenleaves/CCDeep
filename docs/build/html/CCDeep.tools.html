@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CCDeep.tools package &mdash; CCDeep 1.2 文档</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="搜索" href="search.html" />
+    <link rel="prev" title="CCDeep.ResNet package" href="CCDeep.ResNet.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> CCDeep
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="在文档中搜索" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">CCDeep</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="CCDeep.html">CCDeep package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="CCDeep.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="CCDeep.ResNet.html">CCDeep.ResNet package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">CCDeep.tools package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#module-CCDeep.config">CCDeep.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#module-CCDeep.evaluate">CCDeep.evaluate module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#ccdeep-main-module">CCDeep.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#module-CCDeep.prediction">CCDeep.prediction module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#module-CCDeep.prepare_data">CCDeep.prepare_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#module-CCDeep.refiner">CCDeep.refiner module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#module-CCDeep.resolver">CCDeep.resolver module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#module-CCDeep.track">CCDeep.track module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#module-CCDeep.train">CCDeep.train module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#ccdeep-train-segment-module">CCDeep.train_segment module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#module-CCDeep.utils">CCDeep.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CCDeep.html#module-CCDeep">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CCDeep</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">CCDeep</a> &raquo;</li>
+          <li><a href="CCDeep.html">CCDeep package</a> &raquo;</li>
+      <li>CCDeep.tools package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/CCDeep.tools.rst.txt" rel="nofollow"> 查看页面源码</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ccdeep-tools-package">
+<h1>CCDeep.tools package<a class="headerlink" href="#ccdeep-tools-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-CCDeep.tools.augmentation">
+<span id="ccdeep-tools-augmentation-module"></span><h2>CCDeep.tools.augmentation module<a class="headerlink" href="#module-CCDeep.tools.augmentation" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.tools.augmentation.AugmentorV2">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.tools.augmentation.</span></span><span class="sig-name descname"><span class="pre">AugmentorV2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.augmentation.AugmentorV2" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.tools.augmentation.AugmentorV2.adjustBright">
+<span class="sig-name descname"><span class="pre">adjustBright</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.augmentation.AugmentorV2.adjustBright" title="永久链接至目标"></a></dt>
+<dd><p>gamma &gt; 1, bright; gamma &lt; 1. dark</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.tools.augmentation.AugmentorV2.flipHorizontal">
+<span class="sig-name descname"><span class="pre">flipHorizontal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.augmentation.AugmentorV2.flipHorizontal" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.tools.augmentation.AugmentorV2.flipVertical">
+<span class="sig-name descname"><span class="pre">flipVertical</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.augmentation.AugmentorV2.flipVertical" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.tools.augmentation.AugmentorV2.movePosition">
+<span class="sig-name descname"><span class="pre">movePosition</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.augmentation.AugmentorV2.movePosition" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.tools.augmentation.AugmentorV2.raw">
+<span class="sig-name descname"><span class="pre">raw</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.augmentation.AugmentorV2.raw" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.tools.augmentation.AugmentorV2.rotate">
+<span class="sig-name descname"><span class="pre">rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotPoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.augmentation.AugmentorV2.rotate" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.tools.augmentation.augmentV2">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.tools.augmentation.</span></span><span class="sig-name descname"><span class="pre">augmentV2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saved_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.augmentation.augmentV2" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.tools.augmentation.get_src">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.tools.augmentation.</span></span><span class="sig-name descname"><span class="pre">get_src</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.augmentation.get_src" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.tools.augmentation.run">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.tools.augmentation.</span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.augmentation.run" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-CCDeep.tools.generate_dataset">
+<span id="ccdeep-tools-generate-dataset-module"></span><h2>CCDeep.tools.generate_dataset module<a class="headerlink" href="#module-CCDeep.tools.generate_dataset" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.tools.generate_dataset.generate">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.tools.generate_dataset.</span></span><span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellfilter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.generate_dataset.generate" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.tools.generate_dataset.get_path">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.tools.generate_dataset.</span></span><span class="sig-name descname"><span class="pre">get_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.generate_dataset.get_path" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.tools.generate_dataset.get_path_60x">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.tools.generate_dataset.</span></span><span class="sig-name descname"><span class="pre">get_path_60x</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.generate_dataset.get_path_60x" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-CCDeep.tools.split_dataset">
+<span id="ccdeep-tools-split-dataset-module"></span><h2>CCDeep.tools.split_dataset module<a class="headerlink" href="#module-CCDeep.tools.split_dataset" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="CCDeep.tools.split_dataset.SplitDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">CCDeep.tools.split_dataset.</span></span><span class="sig-name descname"><span class="pre">SplitDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saved_dataset_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.split_dataset.SplitDataset" title="永久链接至目标"></a></dt>
+<dd><p>基类：<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="CCDeep.tools.split_dataset.SplitDataset.start_splitting">
+<span class="sig-name descname"><span class="pre">start_splitting</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.split_dataset.SplitDataset.start_splitting" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="CCDeep.tools.split_dataset.copy_file">
+<span class="sig-prename descclassname"><span class="pre">CCDeep.tools.split_dataset.</span></span><span class="sig-name descname"><span class="pre">copy_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_mcy_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#CCDeep.tools.split_dataset.copy_file" title="永久链接至目标"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-CCDeep.tools">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-CCDeep.tools" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="CCDeep.ResNet.html" class="btn btn-neutral float-left" title="CCDeep.ResNet package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> 上一页</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2022, Frozenleaves.</p>
+  </div>
+
+  利用 <a href="https://www.sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">主题</a>
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
