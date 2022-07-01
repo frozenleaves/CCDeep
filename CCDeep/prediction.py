@@ -198,11 +198,11 @@ class Segmenter(object):
         if segment_model is None:
             sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             if config.TIMES == 20:
-                self.model = StarDist2D(None, name='segment_20x_model',
-                                        basedir='saved_segment_models/saved_20x_segment_model_1.3.4')
+                self.model = StarDist2D(None, name=config.segment_model_name_20x,
+                                        basedir=config.segment_model_saved_dir_20x)
             elif config.TIMES == 60:
-                self.model = StarDist2D(None, name='segment_60x_model',
-                                        basedir='saved_segment_models/saved_60x_segment_model')
+                self.model = StarDist2D(None, name=config.segment_model_name_60x,
+                                        basedir=config.segment_model_saved_dir_60x)
             else:
                 raise ValueError(f"Image magnification in config.py should be 20 or 60, got {config.TIMES} instead")
         else:

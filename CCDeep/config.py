@@ -53,15 +53,15 @@ test_dir_dic_20x = os.path.join(dataset_dir_dic_20x, "test")
 # segmentation model config
 
 # 60x
-model_name = 'segment_60x_model'
-model_saved_dir = '/home/zje/CellClassify/saved_models/saved_60x_segment_model/'
+segment_model_name_60x = 'segment_60x_model'
+segment_model_saved_dir_60x = '/home/zje/CellClassify/saved_models/saved_60x_segment_model/'
 tain_dataset = '/home/zje/CellClassify/train_dataset/segment_train_60x/train/images'
 train_label = '/home/zje/CellClassify/train_dataset/segment_train_60x/train/masks'
 valid_size = 0.1
 
 # 20x
-model_name_20x = 'segment_20x_model'
-model_saved_dir_20x = '../models/classify/20x/'
+segment_model_name_20x = 'segment_20x_model'
+segment_model_saved_dir_20x = '../models/segment/20x/'
 train_dataset_20x = '/home/zje/CellClassify/train_dataset/segment_train_20x/train/images'
 train_label_20x = '/home/zje/CellClassify/train_dataset/segment_train_20x/train/masks'
 

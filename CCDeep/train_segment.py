@@ -86,7 +86,7 @@ def augmenter(x, y):
     return x, y
 
 
-model = StarDist2D(conf, name=config.model_name_20x, basedir=config.model_saved_dir_20x)
+model = StarDist2D(conf, name=config.segment_model_name_20x, basedir=config.segment_model_saved_dir_20x)
 # model = StarDist2D(None, name=config.model_name_20x, basedir=config.model_saved_dir_20x)
 model.train(X_trn, Y_trn, validation_data=(X_val, Y_val), augmenter=augmenter)
 model.optimize_thresholds(X_val, Y_val)

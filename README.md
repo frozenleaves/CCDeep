@@ -41,7 +41,10 @@
 
 ##### 四、安装中可能刚出现的问题以及解决方案
 
-	1. `OSError: Failed to open file b'C:\\Users\\\xe6\x96\x87...\\ AppData\\Local\\Temp\\scipy-xxxxx`，此问题原因为环境变量`TEMP`和`TMP`的路径存在中文，改为纯英文路径即可。
-	1. 如果遇到其他包依赖问题，根据错误提示进行相应的安装即可。
-	1. 为了兼容性起见，请首先安装`cudatoolkit`和`cudnn`，然后安装`tensorflow`，再安装其他package。
-	1. 有其他任何问题请上传issue。
+​	`OSError: Failed to open file b'C:\\Users\\\xe6\x96\x87...\\ AppData\\Local\\Temp\\scipy-xxxxx`，此问题原因为环境变量`TEMP`和`TMP`的路径存在中文，改为纯英文路径即可。
+
+​	如果遇到其他包依赖问题，根据错误提示进行相应的安装即可。
+
+​	为了兼容性起见，请首先安装`cudatoolkit`和`cudnn`，然后安装`tensorflow`，再安装其他package。
+
+​	有其他任何问题请上传issue。
