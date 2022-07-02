@@ -116,5 +116,5 @@ English | [简体中文](./README_cn.md)
 
 ### Start Using
 
-Please refer to our <a href= "#" > usage examples </a> to start using. For more usage, please refer to the <a href= "#" >API documentation</a>.
+Please refer to our <a href= "#" > usage examples </a> to start using. For more usage, please refer to the <a href= "https://ccdeep.readthedocs.io/zh/latest/index.html" >API documentation</a>.
 
