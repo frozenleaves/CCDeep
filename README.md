@@ -1,4 +1,4 @@
-## <center>Welcome to the CCDeep</center>
+## <center>Welcome to the CCDeep！</center>
 
 
 
@@ -22,7 +22,7 @@
 
 2.   安装完anaconda3后，如果是Windows系统，打开其中的`Anaconda Powershell Prompt`（从开始菜单栏可以找到），如果是Linux系统或者是mac系统，直接打开终端即可。
 3.   使用`conda create -n CCDeep python=3.7`新建一个conda虚拟环境，并使用`conda activate CCDeep`来激活并使用这个环境。
-4.   如果您的电脑具有NVIDIA的GPU，并且您想要通过GPU来加速运算，请按照<a href="">步骤三</a>来安装`tensorflow-GPU`，以及相应的`cudatoolkiit`和`cudnn`，如果您不需要使用GPU或者电脑上没有NVIDIA的GPU，只需要安装`tensorflow`CPU版本的即可。
+4.   如果您的电脑具有NVIDIA的GPU，并且您想要通过GPU来加速运算，请按照<a href="#step3">步骤三</a>来安装`tensorflow-GPU`，以及相应的`cudatoolkiit`和`cudnn`，如果您不需要使用GPU或者电脑上没有NVIDIA的GPU，只需要安装`tensorflow`CPU版本即可。
 5.   请按照下面的命令顺序依次安装依赖的包：
      1.   `pip install tensorflow==2.4.0` (如果安装GPU版本，请先按照步骤三安装相应的package，再安装下面的其他package)
      2.   `pip install stardist==0.8.3` 
@@ -35,9 +35,66 @@
 
 
 
-##### 三、安装TensorFlow-GPU版本
+##### <span id="#step3">三、安装TensorFlow-GPU版本</span>
 
+**如果您需要执行这一步，请确保您的虚拟环境是干净的，否则可能会出现包依赖问题！**
 
+1.   安装`cudatoolkit`：`conda install cudatoolkit==11.0.221`
+
+2.   安装`cudnn`：`conda install cundd==8.0.5.39 -c conda-forge`
+
+     *注：这两个包请务必使用`conda install package`命令安装，因为他们不是python package， 无法在PyPI中索引。*
+
+3.   安装`tensorflow-gpu`：`pip install tensorflow-gpu==2.4.0`。
+
+     *注：这一步请不要用`conda install package`命令完成，因为`conda`源并没有及时更新到合适的版本，可能会提示找不到源的问题。*
+
+4.   测试`cuda`的可用性和兼容性：
+
+     ```python
+     >>> import tensorflow as tf
+     2022-07-02 13:07:50.756143: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.11.0
+     >>> tf.test.is_gpu_available()
+     2022-07-02 13:08:20.525184: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcuda.so.1
+     2022-07-02 13:08:21.247969: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 0 with properties:
+     pciBusID: 0000:18:00.0 name: NVIDIA GeForce RTX 3090 computeCapability: 8.6
+     coreClock: 1.695GHz coreCount: 82 deviceMemorySize: 23.70GiB deviceMemoryBandwidth: 871.81GiB/s
+     2022-07-02 13:08:21.248438: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 1 with properties:
+     pciBusID: 0000:3b:00.0 name: NVIDIA GeForce RTX 3090 computeCapability: 8.6
+     coreClock: 1.695GHz coreCount: 82 deviceMemorySize: 23.70GiB deviceMemoryBandwidth: 871.81GiB/s
+     2022-07-02 13:08:21.248838: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 2 with properties:
+     pciBusID: 0000:86:00.0 name: NVIDIA GeForce RTX 3090 computeCapability: 8.6
+     coreClock: 1.695GHz coreCount: 82 deviceMemorySize: 23.70GiB deviceMemoryBandwidth: 871.81GiB/s
+     2022-07-02 13:08:21.249213: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1720] Found device 3 with properties:
+     pciBusID: 0000:af:00.0 name: NVIDIA GeForce RTX 3090 computeCapability: 8.6
+     coreClock: 1.695GHz coreCount: 82 deviceMemorySize: 23.70GiB deviceMemoryBandwidth: 871.81GiB/s
+     2022-07-02 13:08:21.249257: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.11.0
+     2022-07-02 13:08:21.276669: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11
+     2022-07-02 13:08:21.276817: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublasLt.so.11
+     2022-07-02 13:08:21.292073: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcufft.so.10
+     2022-07-02 13:08:21.299397: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcurand.so.10
+     2022-07-02 13:08:21.323907: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcusolver.so.10
+     2022-07-02 13:08:21.329281: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcusparse.so.11
+     2022-07-02 13:08:21.331335: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8
+     2022-07-02 13:08:21.333955: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1862] Adding visible gpu devices: 0, 1, 2, 3
+     2022-07-02 13:08:21.336478: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.11.0
+     2022-07-02 13:08:25.106753: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1261] Device interconnect StreamExecutor with strength 1 edge matrix:
+     2022-07-02 13:08:25.106830: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1267]      0 1 2 3
+     2022-07-02 13:08:25.106849: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1280] 0:   N N N N
+     2022-07-02 13:08:25.106862: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1280] 1:   N N N N
+     2022-07-02 13:08:25.106875: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1280] 2:   N N N N
+     2022-07-02 13:08:25.106889: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1280] 3:   N N N N
+     2022-07-02 13:08:25.110906: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1406] Created TensorFlow device (/device:GPU:0 with 468 MB memory) -> physical GPU (device: 0, name: NVIDIA GeForce RTX 3090, pci bus id: 0000:18:00.0, compute capability: 8.6)
+     2022-07-02 13:08:25.114327: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1406] Created TensorFlow device (/device:GPU:1 with 22430 MB memory) -> physical GPU (device: 1, name: NVIDIA GeForce RTX 3090, pci bus id: 0000:3b:00.0, compute capability: 8.6)
+     2022-07-02 13:08:25.116215: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1406] Created TensorFlow device (/device:GPU:2 with 1250 MB memory) -> physical GPU (device: 2, name: NVIDIA GeForce RTX 3090, pci bus id: 0000:86:00.0, compute capability: 8.6)
+     2022-07-02 13:08:25.117281: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1406] Created TensorFlow device (/device:GPU:3 with 14009 MB memory) -> physical GPU (device: 3, name: NVIDIA GeForce RTX 3090, pci bus id: 0000:af:00.0, compute capability: 8.6)
+     True
+     >>> 
+     ```
+
+     在终端的python交互界面运行这两行测试代码，如果有上面相同的输出，恭喜您成功安装了`cuda`并且它是可用的。如果您测试过程中Log信息长时间停留在某一行不再输出任何信息也不退出交互界面，例如交互界面停留在`Successfully opened dynamic library libcurand.so.10`，则是因为您安装的`cudatoolkit`和`cudnn`版本不兼容，需要重新安装。如果您的GPU为RTX3090或者以下，建议您按照我们推荐的版本安装，否则请您自行适配相应的版本。
+
+     
 
 ##### 四、安装中可能刚出现的问题以及解决方案
 
