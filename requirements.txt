@@ -9,9 +9,9 @@ pylibtiff==0.4.4
 retry
 scikit_learn
 scipy
-skimage
 stardist
 tensorflow==2.4.0
 tifffile
 tqdm
 trackpy
+scikit-image
