@@ -1,55 +1,61 @@
 ## <center>Welcome to the CCDeep！</center>
 
+------
 
-
-### 一、快速开始
-
-1.   克隆此仓库到您喜欢的任意位置，并<a href="https://github.com/frozenleaves/CCDeep-release1.2/releases/download/v1.2/models.rar"><font color=red>下载</font></a>预训练好的模型。
-2.   使用conda创建一个合适的python虚拟环境`CCDeep`，如果您不介意污染系统环境，也可以省略这一步，直接使用系统python环境。如何创建虚拟环境请参见下面的详细安装教程。
-3.   激活刚才创建的虚拟环境，并安装一些依赖的包：`pip install requirements.txt`，其中有一些依赖包可能无法通过此命令顺利安装，下文有详细解决方案。如果此命令执行失败， 请按照顺序逐个执行`pip install package` 或者`conda install packages`。
-4.   进入到您下载的源码中的`CCDeep`目录, 里面有一个`main.py`文件，您可以不提供任何参数来运行这个文件，这会告诉您如何使用这个package。您也可以下载一些示例图片来真正的执行它，下载示例图片请点击<a href="https://github.com/frozenleaves/CCDeep/releases/tag/v1.2.1"><font color=red>这里</font></a>。将示例图片下载到合适的地方后， 执行 `python main.py -bf [your example_of_dic.tif path] -pcna [your example_of_mcy.tif path] -o [your output file savepath]`，或者在`main.py`所在目录下直接运行`python .\main.py -bf ..\examples\images\example_of_dic.tif -pcna ..\examples\images\example_of_mcy.tif`,不出意外您稍后就可以得到最终的单帧预测输出结果，您可以选择将其加载到VIA中可视化查看，也可以稍后<a href=""><font color=blue>转化为zip文件导入到ImageJ</font></a>中查看。
-5.   更多内容请查看<a href="#">**使用示例**</a>
+English | [简体中文](./README_cn.md)
 
 
 
-### 二、安装
+### Quick Start
 
-##### 一、从仓库克隆源代码：`https://github.com/frozenleaves/CCDeep.git`到合适的位置
+1.   Clone this repository to any location you like, and <a href="https://github.com/frozenleaves/CCDeep-release1.2/releases/download/v1.2/models.rar"><font color=red>download</font></a> the pre-trained model.
+2.   Use `conda` to create a suitable Python virtual environment `ccdeep`. If you don't mind polluting the system environment, you can also omit this step and use the system Python environment directly. See the following detailed installation tutorial for how to create a virtual environment.
+3.   Activate the virtual environment just created and install some dependent packages：`pip install requirements.txt`，Some of the dependent packages may not be installed successfully through this command, and detailed solutions are given below. If this command fails to execute, please execute `pip install package`or`conda install packages`one by one in order .
+4.   Enter the `ccdeep` directory in the source code you just download, there have a `main.py` file, you can run this file without providing any parameters, which will tell you how to use this package. Or you can download some sample images to actually execute it, To download the smaple images, please click <a href="https://github.com/frozenleaves/CCDeep/releases/tag/v1.2.1"><font color=red>here</font></a>.After downloading the sample images to the appropriate place, you can execute `python main.py -bf [your example_of_dic.tif path] -pcna [your example_of_mcy.tif path] -o [your output file savepath]`，Or run `python ./main.py -bf ../examples/images/example_of_dic.tif -pcna ../examples/images/example_of_mcy.tif` directly in the directory where `main.py` is located. Not surprisingly, you can get the final single frame prediction output later. You can choose to load it into via for visual viewing, or later <a href=""><font color=blue>convert to zip file and import to ImageJ</font></a>for viewing.
+5.   For more information, please see the <a href="#">**usage example**</a>
 
-##### 二、安装Anaconda3并配置虚拟环境
+--------
 
-1.   如果您的计算机没有安装anaconda3， 请从<a href="https://www.anaconda.com/products/distribution">**这里**</a>下载并安装，视您的计算机系统不同，选择合适的版本安装即可。
+### Installation
 
-2.   安装完anaconda3后，如果是Windows系统，打开其中的`Anaconda Powershell Prompt`（从开始菜单栏可以找到），如果是Linux系统或者是mac系统，直接打开终端即可。
-3.   使用`conda create -n CCDeep python=3.7`新建一个conda虚拟环境，并使用`conda activate CCDeep`来激活并使用这个环境。
-4.   如果您的电脑具有NVIDIA的GPU，并且您想要通过GPU来加速运算，请按照[步骤三](#step3)来安装`tensorflow-GPU`，以及相应的`cudatoolkiit`和`cudnn`，如果您不需要使用GPU或者电脑上没有NVIDIA的GPU，只需要安装`tensorflow`CPU版本即可。
-5.   请按照下面的命令顺序依次安装依赖的包：
-     1.   `pip install tensorflow==2.4.0` (如果安装GPU版本，请先按照步骤三安装相应的package，再安装下面的其他package)
+##### Clone source code from the repository to any you like location：`https://github.com/frozenleaves/CCDeep.git`
+
+##### Install Anaconda3 and configure the virtual environment
+
+1.   If your computer don't install anaconda3， please download and install from<a href="https://www.anaconda.com/products/distribution">**here**</a>, according to your computer system, choose the appropriate version to install.
+
+2.   After installed anaconda3，if you using Windows system，please open the `Anaconda Powershell Prompt`（You can find it from the start menu bar），If your system is  Linux system or  MAC system, please add Anaconda to the environment variable when installing it, and then directly open the terminal. If you do not add the environment variable, you need to add it manually.
+3.   Using `conda create -n CCDeep python=3.7` to create a new conda virtual environment, and using `conda activate CCDeep`to activate and use this environment.
+4.   If your computer has NVIDIA GPU and you want to speed up the running through GPU，please follow [step3](#step3) to install `tensorflow-GPU`，and corresponding`cudatoolkiit`and `cudnn`. If you don't need to use GPU or there is no NVIDIA GPU on your computer, just install the `tensorflow` CPU version.
+5.   Please install the dependent packages in the following command：
+     1.   `pip install tensorflow==2.4.0` (If you install the GPU version，please following the [step3](#step3) to install the corresponding packages，and then install other packages below)
      2.   `pip install stardist==0.8.3` 
      3.   `pip install opencv-python`
      4.   `pip install scikit-image`
      5.   `pip install matplotlib`
      6.   `pip install tifffile`
-     7.   `pip install pylibtiff` (如果安装报错，或者安装后运行报错，请下载wheel文件离线安装，wheel文件请从<a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#pylibtiff">**这里**</a>选择合适的版本下载。)
+     7.   `pip install pylibtiff` (If an error occur during installation or after installation, please download the wheel file for offline installation，you can download the wheel file from <a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#pylibtiff">**here**</a>, just select the appropriate version to download.)
      8.   `pip install bitarray`
+     9.   `pip install trackpy`
+     10.   `pip install pandas`
 
+-------
 
+##### <span id="step3">Install TensorFlow-GPU Version</span>
 
-##### <span id="step3">三、安装TensorFlow-GPU版本</span>
+**If you need to perform this step, please ensure that your virtual environment is clean, and there is no numpy or numpy dependent package installed, otherwise package dependency may occur!**
 
-**如果您需要执行这一步，请确保您的虚拟环境是干净的，否则可能会出现包依赖问题！**
+1.   Install `cudatoolkit`：`conda install cudatoolkit==11.0.221`
 
-1.   安装`cudatoolkit`：`conda install cudatoolkit==11.0.221`
+2.   Install `cudnn`：`conda install cundd==8.0.5.39 -c conda-forge`
 
-2.   安装`cudnn`：`conda install cundd==8.0.5.39 -c conda-forge`
+     *Note: these two packages must be installed with`conda install package`command， because this are not `Python packages` and cannot be indexed in PyPi.*
 
-     *注：这两个包请务必使用`conda install package`命令安装，因为他们不是python package， 无法在PyPI中索引。*
+3.   Install `tensorflow-gpu`：`pip install tensorflow-gpu==2.4.0`。
 
-3.   安装`tensorflow-gpu`：`pip install tensorflow-gpu==2.4.0`。
+     *Note：Please do not use`conda install package`command to install this package，because the `conda` source is not updated to the appropriate version in time, which may prompt the problem that the source cannot be found.*
 
-     *注：这一步请不要用`conda install package`命令完成，因为`conda`源并没有及时更新到合适的版本，可能会提示找不到源的问题。*
-
-4.   测试`cuda`的可用性和兼容性：
+4.   Test the availability and compatibility of `CUDA`：
 
      ```python
      >>> import tensorflow as tf
@@ -92,16 +98,23 @@
      >>> 
      ```
 
-     在终端的python交互界面运行这两行测试代码，如果有上面相同的输出，恭喜您成功安装了`cuda`并且它是可用的。如果您测试过程中Log信息长时间停留在某一行不再输出任何信息也不退出交互界面，例如交互界面停留在`Successfully opened dynamic library libcurand.so.10`，则是因为您安装的`cudatoolkit`和`cudnn`版本不兼容，需要重新安装。如果您的GPU为RTX3090或者以下，建议您按照我们推荐的版本安装，否则请您自行适配相应的版本。
+     Run these two lines of test code in the python interactive interface. If there is the same output above, congratulations!  You are successfully installing `CUDA` and its availability. If the Log information stays in a certain line for a long time during the test, and your terminal  do not output any information and will not exit the interactive interface, for example, the interactive interface stays at`Successfully opened dynamic library libcurand.so.10`, this is the reason that your`cudatoolkit`and `cudnn`have an incompatible version，you may need to reinstall this two packages. If your GPU is RTX3090 or below，**We recommend that you install according to the recommended version, otherwise, please adapt the corresponding version by yourself**.
 
      
 
-##### 四、安装中可能刚出现的问题以及解决方案
+##### Possible Rroblems and Solutions During Installation
 
-​	`OSError: Failed to open file b'C:\\Users\\\xe6\x96\x87...\\ AppData\\Local\\Temp\\scipy-xxxxx`，此问题原因为环境变量`TEMP`和`TMP`的路径存在中文，改为纯英文路径即可。
+​	`OSError: Failed to open file b'C:\\Users\\\xe6\x96\x87...\\ AppData\\Local\\Temp\\scipy-xxxxx`, The reason for this problem is that the path of the environment variables `TEMP` and `TMP` exist in Chinese, so you can change them to pure English path.
 
-​	如果遇到其他包依赖问题，根据错误提示进行相应的安装即可。
+​	If you encounter other package dependency problems, just install them according to the error prompt.
 
-​	为了兼容性起见，请首先安装`cudatoolkit`和`cudnn`，然后安装`tensorflow`，再安装其他package。
+​	For compatibility, please first install `cudatoolkit`and `cudnn`，and then install `tensorflow`，after this, Install other packages.
 
-​	有其他任何问题请上传issue。
+​	Please upload issue if you have any other questions.
+
+
+
+### Start Using
+
+Please refer to our <a href= "#" > usage examples </a> to start using. For more usage, please refer to the <a href= "#" >API documentation</a>.
+
