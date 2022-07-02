@@ -116,5 +116,5 @@
 
 ### 三、开始使用
 
-请参考我们的<a href="#">使用示例</a>来开始使用，更多用法请参考<a href="#">API文档</a>
+请参考我们的<a href="#">使用示例</a>来开始使用，更多用法请参考<a href="https://ccdeep.readthedocs.io/zh/latest/index.html">API文档</a>
 
