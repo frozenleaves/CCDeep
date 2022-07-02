@@ -7,7 +7,6 @@ pandas
 Pillow
 pylibtiff==0.4.4
 retry
-scikit_image
 scikit_learn
 scipy
 skimage
