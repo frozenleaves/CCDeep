@@ -22,7 +22,7 @@
 
 2.   安装完anaconda3后，如果是Windows系统，打开其中的`Anaconda Powershell Prompt`（从开始菜单栏可以找到），如果是Linux系统或者是mac系统，直接打开终端即可。
 3.   使用`conda create -n CCDeep python=3.7`新建一个conda虚拟环境，并使用`conda activate CCDeep`来激活并使用这个环境。
-4.   如果您的电脑具有NVIDIA的GPU，并且您想要通过GPU来加速运算，请按照<a href="#step3">步骤三</a>来安装`tensorflow-GPU`，以及相应的`cudatoolkiit`和`cudnn`，如果您不需要使用GPU或者电脑上没有NVIDIA的GPU，只需要安装`tensorflow`CPU版本即可。
+4.   如果您的电脑具有NVIDIA的GPU，并且您想要通过GPU来加速运算，请按照[步骤三](#step3)来安装`tensorflow-GPU`，以及相应的`cudatoolkiit`和`cudnn`，如果您不需要使用GPU或者电脑上没有NVIDIA的GPU，只需要安装`tensorflow`CPU版本即可。
 5.   请按照下面的命令顺序依次安装依赖的包：
      1.   `pip install tensorflow==2.4.0` (如果安装GPU版本，请先按照步骤三安装相应的package，再安装下面的其他package)
      2.   `pip install stardist==0.8.3` 
@@ -35,7 +35,7 @@
 
 
 
-##### <span id="#step3">三、安装TensorFlow-GPU版本</span>
+##### <span id="step3">三、安装TensorFlow-GPU版本</span>
 
 **如果您需要执行这一步，请确保您的虚拟环境是干净的，否则可能会出现包依赖问题！**
 
