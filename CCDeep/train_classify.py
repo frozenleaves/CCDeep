@@ -1,11 +1,10 @@
 from __future__ import absolute_import, division, print_function
-
-import tensorflow as tf
-from ResNet.resnet import resnet_18, resnet_34, resnet_50, resnet_101, resnet_152
-import config
-from prepare_data import generate_datasets_60x, generate_datasets_20x
 import math
 import csv
+import tensorflow as tf
+from .ResNet.resnet import resnet_18, resnet_34, resnet_50, resnet_101, resnet_152
+from . import config
+from .prepare_data import generate_datasets_60x, generate_datasets_20x
 
 
 def get_model():
@@ -22,7 +21,7 @@ def get_model():
     return __model
 
 
-if __name__ == '__main__':
+def train():
     # GPU settings
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
