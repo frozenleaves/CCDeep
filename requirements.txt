@@ -1,0 +1,17 @@
+csbdeep
+imutils
+matplotlib
+numpy
+opencv_python
+pandas
+Pillow
+pylibtiff==0.4.4
+retry
+scikit_learn
+scipy
+stardist
+tensorflow==2.4.0
+tifffile
+tqdm
+trackpy
+scikit-image
