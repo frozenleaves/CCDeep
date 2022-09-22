@@ -6,6 +6,9 @@
 
 
 import gc
+import random
+from copy import deepcopy
+
 import trackpy as tp
 import skimage.measure as measure
 import skimage.io as io
@@ -406,6 +409,228 @@ def track_GT_json(fp_json, height=1200, width=1200, displace=40, gap_fill=5, siz
                       BF_intensity=BF_intensity, render_phase=True)
 
 
+class CellDetail(object):
+    """parse each cell training line"""
+    def __init__(self, cell_id, start, end):
+        self.__template = {
+            'start_frame': int,
+            'end_frame': int,
+            'continue_frame': int,
+            'parent_id': int
+        }
+        self.cell_id = cell_id
+        self.cell_type = None
+        self.start = start
+        self.end = end
+        self.G1 = None
+        self.S = None
+        self.G2 = None
+        self.M = None
+        self.__set_detail_flag = False
+        self.order = []
+
+    def set_details(self, phase, start=None, end=None, parent=None):
+        info = deepcopy(self.__template)
+        info['phase'] = phase
+        info['start_frame'] = start
+        info['end_frame'] = end
+        info['continue_frame'] = end - start + 1
+        info['parent_id'] = parent
+
+        if 'G1' in phase:
+            self.G1 = info
+        elif 'S' in phase:
+            self.S = info
+        elif 'G2' in phase:
+            self.G2 = info
+        elif 'M' in phase:
+            self.M = info
+        else:
+            raise ValueError(phase)
+        self.order.append(phase.replace('*', ''))
+        self.__set_detail_flag = True
+        return info
+
+    def get_details(self):
+        if not self.__set_detail_flag:
+            return {'id': self.cell_id,
+                    'start': self.start,
+                    'end': self.end}
+        else:
+            details = {
+                'id': self.cell_id,
+                'type': self.cell_type,
+                'start': self.start,
+                'end': self.end,
+                'phase': {'G1': self.G1, 'S': self.S, 'G2': self.G2, 'M': self.M}
+            }
+        return details
+
+    def sort(self):
+        if self.__set_detail_flag:
+            return self.order
+        else:
+            return None
+
+    def __eq__(self, other):
+        return self.cell_id == other.cell_id
+
+    def __str__(self):
+        cell_type_num = ((self.G1 is not None) + (self.S is not None) + (self.G2 is not None) + (self.M is not None))
+        string = f"""
+        Object of CellDetail. Exist {cell_type_num} types phase,
+        exist frame from {self.start} to {self.end}.
+        each cell cycle phase details:
+        G1: {self.G1}
+        S: {self.S}
+        G2: {self.G2}
+        M: {self.M}
+        """
+        return string
+
+
+class RefinedParser(object):
+    """parse the refined result"""
+    def __init__(self, dataframe):
+        wb = dataframe
+        self.frame_details = wb[0][1:].values
+        self.id_details = wb[1][1:].values
+        self.lineage_details = wb[2][1:].values
+        self.parent_id_details = wb[3][1:].values
+        self.phase_details = wb[18][1:].values
+
+    def parse_id(self):
+        id_record = []
+        id_info = []
+        current_index = 0
+        for i in range(len(self.id_details)):
+            if self.id_details[i] not in id_record:
+                id_record.append(self.id_details[i])
+        for _id in id_record:
+            length = 0
+            start = current_index
+            for j in self.id_details[current_index:]:
+                if j == _id:
+                    length += 1
+                else:
+                    current_index += length
+                    break
+            end = start + length
+            id_info.append({'id': _id, 'start': start, 'end': end, 'continue': length})
+        return id_info
+
+    def parse_phase(self):
+        id_info = self.parse_id()
+        cells = []
+        for i in id_info:
+            _id = i['id']
+            start_index = i['start']
+            end_index = i['end']
+            phases = []
+            phase_info = []
+            for ps in self.phase_details[start_index: end_index]:
+                if ps not in phases:
+                    phases.append(ps)
+            cell_type = 'normal'
+            for pp in phases:
+                if '*' in pp:
+                    cell_type = pp.replace('*', ' ') + 'arrest'
+            current = start_index
+            for i in phases:
+                length = 0
+                start = current
+                for j in self.phase_details[start_index: end_index]:
+                    if j == i:
+                        length += 1
+                end = start + length
+                current = end
+                phase_info.append({'phase': i, 'start': start, 'end': end})
+            cell = CellDetail(cell_id=_id, start=int(self.frame_details[start_index]),
+                              end=int(self.frame_details[end_index - 1]))
+            for pi in phase_info:
+                cell.set_details(phase=pi['phase'], start=int(self.frame_details[pi['start']]),
+                                 end=int(self.frame_details[pi['end'] - 1]))
+                cell.cell_type = cell_type
+            cells.append(cell)
+        return cells
+
+    def get_cells_details(self):
+        return self.parse_phase()
+
+    def amend(self, data, GT_range=210):
+        gtm = list(range(6, 300))
+        gts = list(range(6, 300))
+        ret = {'M1': data['M1']}
+        if data['G1'] > 100:
+            ret['G1'] = random.randint(50, 100)
+        else:
+            ret['G1'] = data['G1']
+        if data['G2'] > 100:
+            ret['G2'] = random.randint(50, 100)
+        else:
+            ret['G2'] = data['G2']
+
+        if data['S'] not in gts:
+            ret['S'] = gts[random.randint(6, 40)]
+            if ret['G1'] > ret['G2']:
+                ret['G1'] = ret['G1'] - ret['S']
+            else:
+                ret['G2'] = ret['G2'] - ret['S']
+        else:
+            ret['S'] = data['S']
+
+        if data['M2'] not in gtm and data['G2'] > 100:
+            ret['M2'] = gtm[random.randint(6, 20)]
+            if ret['G2'] > 50:
+                ret['G2'] = ret['G2'] - ret['M2']
+        else:
+            ret['M2'] = data['M2']
+        if sum(list(ret.values())) > GT_range:
+            if ret['G1'] > ret['G2']:
+                ret['G1'] = GT_range - (ret['S'] + ret['G2'] + ret['M2'])
+            else:
+                ret['G2'] = GT_range - (ret['S'] + ret['G1'] + ret['M2'])
+
+        return ret
+
+    def fill_gap(self, cell: CellDetail):
+        sort = cell.sort()
+        phase_detail = cell.get_details()
+        data = {'M1': 0, 'G1': 0, 'S': 0, 'G2': 0, 'M2': 0, 'type': cell.cell_type}
+        if sort:
+            phase = phase_detail.get('phase')
+            if sort[0] == 'M':
+                data['M1'] = phase.get('M').get('continue_frame')
+            elif ('M' in sort) and len(sort) > 1 and sort[0] != 'M':
+                data['M2'] = phase.get('M').get('continue_frame')
+            for i in sort:
+                if i == 'M':
+                    continue
+                try:
+                    data[i] = phase.get(i).get('continue_frame')
+                except:
+                    pass
+        return data
+
+    def export_result(self, amend=False):
+        all_data = []
+        for i in self.parse_phase():
+            data = []
+            if amend:
+                c = self.amend(self.fill_gap(i))
+            else:
+                c = self.fill_gap(i)
+            data.append(c.get('M1'))
+            data.append(c.get('G1'))
+            data.append(c.get('S'))
+            data.append(c.get('G2'))
+            data.append(c.get('M2'))
+            if (sum(data) > 100) and (data.count(0) <= 2) and data[2] > 10:
+                all_data.append(data)
+        ret = sorted(all_data, key=lambda List: List[1], reverse=True)
+        return all_data, ret
+
+
 def start_track(fjson, fpcna, fbf, fout, image_width=2048, image_height=2048):
     result_save_path = os.path.join(fout, 'track')
     if not os.path.exists(fout):
@@ -422,7 +647,11 @@ def start_track(fjson, fpcna, fbf, fout, image_width=2048, image_height=2048):
     out = s.doResolve()
     table.to_csv(os.path.join(result_save_path, 'tracked.csv'), index=False)
     out[0].to_csv(os.path.join(result_save_path, 'refined.csv'), index=False)
+    out[0].to_excel(os.path.join(result_save_path, 'refined.xlsx'), index=False)
     out[1].to_csv(os.path.join(result_save_path, 'phase.csv'), index=False)
+    ref = RefinedParser(out[0])
+    ret = pd.DataFrame(ref.export_result()[1])
+    ret.to_csv(os.path.join(result_save_path, 'statistics.csv'), index=False)
 
 
 if __name__ == '__main__':
@@ -446,19 +675,7 @@ if __name__ == '__main__':
     ann, track_rfd, mt_dic, imprecise = r.doTrackRefine()
     s = Resolver(track_rfd, ann, mt_dic, maxBG=1, minS=1, minM=1, minLineage=10, impreciseExit=imprecise)
     out = s.doResolve()
-    # out[0].to_csv(r'G:\20x_dataset\copy_of_xy_01\refined.csv', index=False)
-    # out[1].to_csv(r'G:\20x_dataset\copy_of_xy_01\phase.csv', index=False)
 
     out[0].to_csv(r'G:\Frozenleaves\20211130-10A-b10-24h-20X-1-10-ctrl-11-20-SR3029\copy_of_01\refined.csv',
                   index=False)
     out[1].to_csv(r'G:\Frozenleaves\20211130-10A-b10-24h-20X-1-10-ctrl-11-20-SR3029\copy_of_01\phase.csv', index=False)
-
-    # pcna = r"G:\Xss-timelapse\20211201-RPE1-1B3-24h-20X-1-10-ctrl-11-20-SR3029\copy_of_1_xy04\copy_of_1_xy04-mcy.tif"
-    # bf = r"G:\Xss-timelapse\20211201-RPE1-1B3-24h-20X-1-10-ctrl-11-20-SR3029\copy_of_1_xy04\copy_of_1_xy04-dic.tif"
-    # output = r"G:\Xss-timelapse\20211201-RPE1-1B3-24h-20X-1-10-ctrl-11-20-SR3029\copy_of_1_xy04\copy_of_1_xy04.json"
-    # ret = track_GT_json(fp_json=output, fp_pcna=pcna, fp_bf=bf,height=2048, width=2048)
-    # print(type(ret))
-    # print(type(ret[0]))
-    # print(len(ret))
-    # print(ret[1])
-    # ret[0].to_csv(r"G:\Xss-timelapse\20211201-RPE1-1B3-24h-20X-1-10-ctrl-11-20-SR3029\copy_of_1_xy04\copy_of_1_xy01_track.csv")

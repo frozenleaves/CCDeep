@@ -43,7 +43,8 @@
 
 ##### <span id="step3">三、安装TensorFlow-GPU版本</span>
 
-**如果您需要执行这一步，请确保您的虚拟环境是干净的，并且其中没有安装过numpy或者依赖numpy的package，否则可能会出现包依赖问题！**
+**如果您需要执行这一步，请确保您的虚拟环境是干净的，并且其中没有安装过numpy或者依赖numpy的package，否则可能会出现包依赖问题！
+如果您的python版本>3.7, 可能会出现tensorflow没有合适的版本，这个时候也许您应该降低python版本，或者自行适配tensorflow和cuda。**
 
 1.   安装`cudatoolkit`：`conda install cudatoolkit==11.0.221`
 

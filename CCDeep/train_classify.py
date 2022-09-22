@@ -25,7 +25,7 @@ def get_model():
 
 
 def augment(tensor):
-    """对每个batch在输入网络训练前，进行数据增强"""
+    """Data augmentation is performed on each batch before inputting to the network for training"""
     train_datas = []
     train_labels = []
     for j in range(tensor[1].shape[0]):
@@ -110,6 +110,7 @@ def train():
         valid_accuracy.reset_states()
         step = 0
         if config.AUGMENTATION_IN_TRAINING:
+            # Do the augmentation during training
             for data in train_dataset:
                 images, labels = augment(data)
                 train_step(images, labels)
@@ -121,11 +122,13 @@ def train():
                               math.ceil(train_count / config.BATCH_SIZE),
                               train_loss.result(),
                               train_accuracy.result()), end='')
+                # save training output results
                 train_steps.append(step * (1 + epoch))
                 train_acces.append(float(train_accuracy.result()))
                 train_losses.append(float(train_loss.result()))
             pass
         else:
+            # Do the augmentation before training
             for images, labels in train_dataset:
                 train_step(images, labels)
                 step += 1

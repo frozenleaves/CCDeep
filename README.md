@@ -43,7 +43,8 @@ English | [简体中文](./README_cn.md)
 
 ##### <span id="step3">Install TensorFlow-GPU Version</span>
 
-**If you need to perform this step, please ensure that your virtual environment is clean, and there is no numpy or numpy dependent package installed, otherwise package dependency may occur!**
+**If you need to perform this step, please ensure that your virtual environment is clean, and there is no numpy or numpy dependent package installed, otherwise package dependency may occur! 
+If your python version > 3.7, the tensorflow may not complete the high python version, you need to lower your python,or adapt the tensorflow and cuda by yourself.**
 
 1.   Install `cudatoolkit`：`conda install cudatoolkit==11.0.221`
 

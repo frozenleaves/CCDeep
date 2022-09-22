@@ -24,6 +24,7 @@ def get_images_and_labels(data_root_dir):
 
 
 def read_img(img_path, img_label):
+    """read image data from path dataset, this function's return will be organized for real training dataset."""
     mcy_path = img_path.numpy().decode()
     dic_path = mcy_path.replace('mcy', 'dic')
     dic_img = skimage.io.imread(dic_path)
@@ -38,7 +39,8 @@ def read_img(img_path, img_label):
 
 
 def read_img_dev(img_path, img_label):
-    """开发功能，嵌入数据增强"""
+    """Develop features, embed data augmentation, based on the image path and label dataset,
+       do the augmentation for each batch during read image, and then return the augmented dataset"""
     mcy_path = img_path.numpy().decode()
     dic_path = mcy_path.replace('mcy', 'dic')
     dic_img = skimage.io.imread(dic_path)
@@ -63,6 +65,7 @@ def read_img_dev(img_path, img_label):
 
 
 def wrap_function(mcy, y):
+    """wrap function for tensor and numpy transform """
     if config.AUGMENTATION_IN_TRAINING:
         x_img, y_label = tf.py_function(read_img, inp=[mcy, y], Tout=[tf.uint16, tf.int32])
     else:
@@ -120,14 +123,8 @@ if __name__ == '__main__':
         print(np.array(train_datas).shape)
         print(i[1])
         print(tf.concat(train_labels, axis=0))
-            # print(len(aug_images_dic))
-            # print(aug_labels)
-            # print(i[0][j][:,:,0].shape)
+
         print(tf.convert_to_tensor(np.array(train_datas), dtype=tf.float64)[0])
         break
 
-    # t2 = t.__iter__()
-    # a = next(t2)
-    # b = next(t2)
-    # c = tf.concat((a[0], b[0]), axis=0)
-    # print(c.shape)
+
