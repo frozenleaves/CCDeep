@@ -10,7 +10,7 @@ import os
 from copy import deepcopy
 from typing import Tuple, List
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import sys
 import time

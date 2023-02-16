@@ -111,7 +111,10 @@ If your python version > 3.7, the tensorflow may not complete the high python ve
 
 ​	For compatibility, please first install `cudatoolkit`and `cudnn`，and then install `tensorflow`，after this, Install other packages.
 
+​	If something errors about the tensorflow, you can try add an PATH Variable **CUDA_CACHE_MAXSIZE=4294967296**, maybe it can resolve the problems.
+
 ​	Please upload issue if you have any other questions.
+
 
 
 

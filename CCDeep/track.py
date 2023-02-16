@@ -636,7 +636,7 @@ def start_track(fjson, fpcna, fbf, fout, image_width=2048, image_height=2048):
     if not os.path.exists(fout):
         os.makedirs(result_save_path)
     else:
-        os.mkdir(result_save_path)
+        os.makedirs(result_save_path)
 
     table, mask = track_GT_json(fp_json=fjson, fp_pcna=fpcna, fp_bf=fbf, displace=60, gap_fill=5,
                                 sat=1, gamma=1, height=image_height, width=image_width)

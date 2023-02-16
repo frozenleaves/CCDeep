@@ -10,7 +10,7 @@ retry
 scikit_learn
 scipy
 stardist
-tensorflow==2.4.0
+tensorflow-gpu==2.4.0
 tifffile
 tqdm
 trackpy

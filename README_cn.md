@@ -111,6 +111,8 @@
 
 ​	为了兼容性起见，请首先安装`cudatoolkit`和`cudnn`，然后安装`tensorflow`，再安装其他package。
 
+​	如果出现其他tensorflow相关问题，试试设置系统变量：在环境变量->系统变量中添加CUDA_CACHE_MAXSIZE=4294967296
+
 ​	有其他任何问题请上传issue。
 
 

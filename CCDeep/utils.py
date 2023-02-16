@@ -41,8 +41,8 @@ def tif2png(img: str, png_dir, gamma=0.1):
         img_mcy = exposure.adjust_gamma(i, gamma)
         png = img_as_ubyte(img_mcy)
         plt.imsave(os.path.join(png_dir, filename), png, cmap='gray')
-        print('\r\n' + '='*index + '>', end='')
         index += 1
+
 
 def readTif(filepath):
     """读取并逐帧返回图像"""
@@ -566,16 +566,16 @@ if __name__ == '__main__':
     # json2mask(JsonFilePath=r'G:\20x_dataset\copy_of_xy_01\copy_of_1_xy01.json',
     #           img=r'G:\20x_dataset\copy_of_xy_01\tif\mcy',
     #           mask=r'G:\20x_dataset\copy_of_xy_01\tif\masks')
-    image = r'G:\20221130-10A-b10-1-10-ctrl-11-20-SR\copy01\mcy\copy01-test.tif'
-    img = cv2.imread(image, -1)
-    ret = divideImage(img, 4, 4)
-    for i in ret:
-        plt.imshow(i, cmap='gray')
-        plt.show()
-    plt.imshow(ret[-1], cmap='gray')
-    plt.show()
-    plt.imshow(cv2.resize(ret[-1], (1024, 1024)), cmap='gray')
-    plt.show()
-    print(len(ret))
-    tif2png(r'G:\20221130-10A-b10-1-10-ctrl-11-20-SR\copy11\mcy\copy11.tif', r'G:\20221130-10A-b10-1-10-ctrl-11-20-SR\copy11\png')
-    pass
+    # image = r'G:\20221130-10A-b10-1-10-ctrl-11-20-SR\copy01\mcy\copy01-test.tif'
+    # img = cv2.imread(image, -1)
+    # ret = divideImage(img, 4, 4)
+    # for i in ret:
+    #     plt.imshow(i, cmap='gray')
+    #     plt.show()
+    # plt.imshow(ret[-1], cmap='gray')
+    # plt.show()
+    # plt.imshow(cv2.resize(ret[-1], (1024, 1024)), cmap='gray')
+    # plt.show()
+    # print(len(ret))
+    tif2png(r'F:\wangjiaqi\src\s6\mcy.tif', r'F:\wangjiaqi\src\s6\png')
+

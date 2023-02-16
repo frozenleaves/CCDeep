@@ -116,8 +116,8 @@ if __name__ == '__main__':
             aug_images_mcy = augment_in_train(i[0][j][:, :, 1].numpy(), i[1][j].numpy())
             aug_labels = tf.repeat(i[1][j], len(aug_images_dic))
             for k in range(len(aug_images_dic)):
-                img = np.dstack([cv2.resize(aug_images_dic[k], (config.image_width, config.image_height))/255,
-                                 cv2.resize(aug_images_mcy[k], (config.image_width, config.image_height))/255])
+                img = np.dstack([cv2.resize(aug_images_dic[k], (config.image_width, config.image_height)) / 255,
+                                 cv2.resize(aug_images_mcy[k], (config.image_width, config.image_height)) / 255])
                 train_datas.append(img)
             train_labels.append(aug_labels)
         print(np.array(train_datas).shape)
@@ -126,5 +126,3 @@ if __name__ == '__main__':
 
         print(tf.convert_to_tensor(np.array(train_datas), dtype=tf.float64)[0])
         break
-
-

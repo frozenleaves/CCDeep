@@ -2,6 +2,11 @@ import os
 import argparse
 import sys
 import logging
+import tensorflow as tf
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+tf.config.experimental.set_memory_growth(tf.config.list_physical_devices("GPU")[0], enable=True)
 
 
 sys.path.insert(0, os.path.abspath('CCDeep'))
