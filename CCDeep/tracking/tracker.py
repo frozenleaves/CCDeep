@@ -10,6 +10,7 @@
 """
 from __future__ import annotations
 
+import dataclasses
 from copy import deepcopy
 from functools import wraps, lru_cache
 
@@ -28,7 +29,7 @@ import treelib
 from treelib import Tree, Node
 
 from CCDeep.tracking.prepare import convert_dtype
-from base import Cell, Rectangle, Vector, SingleInstance
+from base import Cell, Rectangle, Vector, SingleInstance, CacheData
 from t_error import InsertError, MitosisError, NodeExistError, ErrorMatchMitosis
 from feature import FeatureExtractor
 
@@ -244,14 +245,31 @@ class TrackingTree(Tree):
     def auto_update_last_layer(self):
         self.__last_layer = self.leaves()
 
-    # def __str__(self):
-    #     if self.track_id is not None:
-    #         return f'Tracking Tree {self.track_id}'
-    #     else:
-    #         return 'Tracking Tree object'
-    #
-    # def __repr__(self):
-    #     return self.__str__()
+
+class MatchRecorder(object):
+    """
+    匹配记录器，每匹配一帧，更新一下匹配记录。
+    记录内容包括：已经完成匹配的细胞，没有匹配的细胞，匹配的精确度
+    """
+
+
+class MatchCache(object):
+    """匹配缓存对象，用于缓存已经匹配过的帧，方便做recheck"""
+
+    def __init__(self):
+        self.cache = CacheData()
+
+    def search(self):
+        """检索缓存"""
+
+    def add(self):
+        """添加缓存"""
+
+    def remove(self):
+        """删除缓存"""
+
+    def flush(self):
+        """刷新缓存"""
 
 
 class Match(SingleInstance):
@@ -431,6 +449,11 @@ class Matcher(object):
             similar = self.match_similar(parent, i)
             if similar.get('IoU') > 0.1:
                 matched[i] = similar
+        if not matched:
+            for i in unmatched_child_list:
+                similar = self.match_similar(parent, i)
+                if similar.get('IoU') > 0:
+                    matched[i] = similar
         return matched
 
     def get_similar_sister(self, parent: Cell, matched_cells_dict: dict, area_t=0.8, shape_t=0.03, area_size_t=1.4,
@@ -501,12 +524,22 @@ class Matcher(object):
     def select_child(self, score_dict):
         """
         对于有多个IOU匹配的选项，选择相似度更大的那一个, 此处是为了区分发生重叠的细胞，而非发生有丝分裂.
-        注意：这个方法陪陪出来的结果不一定是准确的，有可能因为细胞交叉导致发生错配，需要在后面的流程中解决 TODO
+        注意：这个方法匹配出来的结果不一定是准确的，有可能因为细胞交叉导致发生错配，需要在后面的流程中解决 TODO
 
         """
         candidates = {}
         for cell in score_dict:
             if score_dict[cell].get('IoU') > 0.1:
+                candidates[cell] = sum(score_dict[cell].values())
+        if not candidates:
+            print("第二分支，重新选择")
+            print(score_dict)
+            for cell in score_dict:
+                if score_dict[cell].get('IoU') > 0:
+                    candidates[cell] = sum(score_dict[cell].values())
+        if not candidates:
+            print("第三分支，重新选择")
+            for cell in score_dict:
                 candidates[cell] = sum(score_dict[cell].values())
         best = max(candidates, key=candidates.get)
         return best
@@ -795,7 +828,7 @@ class Tracker(object):
 
         for fe_before, fe_current, fe_next in self.feature_ext:
             # print(fe_before, fe_current, fe_next)
-            print((str(index) + '') * 100)
+            print((str(index) + '-') * 100)
             self.track_parent(fe_before, fe_current)
             # self.track_parent(fe_current, fe_next)
             self.check_track(fe_before, fe_current, fe_next)
@@ -831,15 +864,15 @@ class Tracker(object):
             #  如果存在将背景误判为细胞，该分支会很短
             index += 1
             # break
-            if index > 50:
-                break
+            # if index > 181:
+            #     break
 
         fi = 0
         for i in self.trees:
             # if fi != 5:
             #     fi += 1
             #     continue
-            jsf = rf'G:\20x_dataset\copy_of_xy_01\development-dir\track_tree\tree2\tree{fi}.json'
+            jsf = rf'G:\20x_dataset\copy_of_xy_01\development-dir\track_tree\tree3\tree{fi}.json'
             # print('leaves: ', '###'*20)
             print(i.leaves())
             print(i)
@@ -848,8 +881,7 @@ class Tracker(object):
             i.save2file(jsf)
             fi += 1
 
-
-        def save_visualization(rg=52):
+        def save_visualization(rg=369):
             bg_fname = [fr'G:\20x_dataset\copy_of_xy_01\tif\sub_mcy\copy_of_1_xy01-{n:0>4d}.tif' for n in range(rg)]
             print(bg_fname)
             images = list(map(lambda x: cv2.imread(x, -1), bg_fname))
@@ -871,7 +903,7 @@ class Tracker(object):
                 # break
 
             for i in zip(bg_fname, list(images_dict.values())):
-                fname = os.path.join(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t11',
+                fname = os.path.join(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t12',
                                      os.path.basename(i[0]).replace('.tif', '.png'))
                 # fname = os.path.join(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t5',
                 #                      os.path.basename(i[0]))
@@ -879,7 +911,6 @@ class Tracker(object):
                 cv2.imwrite(fname, i[1])
 
         save_visualization()
-
         # pass
         # im1, im2 = self.draw_bbox(img1, img2, self.trees)
         # cv2.imwrite(r'G:\20x_dataset\copy_of_xy_01\development-dir\track11.png', im1)

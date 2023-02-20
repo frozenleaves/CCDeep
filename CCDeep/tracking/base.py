@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import dataclasses
+import queue
 import math
 from abc import ABC, abstractmethod
 import warnings
@@ -456,6 +458,11 @@ class Cell(object):
 
     def __hash__(self):
         return id(self)
+
+
+@dataclasses.dataclass
+class CacheData(object):
+    """"""
 
 
 # class Base(ABC):
