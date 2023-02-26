@@ -48,33 +48,50 @@ def get_frame_by_index(image: np.ndarray, index: int) -> np.ndarray:
 
 def feature_extract(mcy, dic, jsonfile):
     """逐帧返回FeatureExtractor实例，包含当前帧，前一帧，后一帧"""
-    _dic = imread(dic)
-    _mcy = imread(mcy)
     with open(jsonfile) as f:
         annotations = json.load(f)
+    if mcy and dic:
+        _dic = imread(dic)
+        _mcy = imread(mcy)
+        _frame_len = _mcy.shape[0]
+        using_image = True
+    else:
+        _frame_len = len(annotations)
+        using_image = False
 
-    def get_fe(frame_index, frame_name):
-        dic_image = get_frame_by_index(_dic, frame_index)
-        mcy_image = get_frame_by_index(_mcy, frame_index)
+    def get_fe(frame_index, frame_name, using_image=False):
+        if using_image:
+            dic_image = get_frame_by_index(_dic, frame_index)
+            mcy_image = get_frame_by_index(_mcy, frame_index)
+        else:
+            dic_image = mcy_image = None
         region = annotations[frame_name.replace('.tif', '.png')]['regions']
         return FeatureExtractor(image_dic=dic_image, image_mcy=mcy_image, annotation=region, frame_index=frame_index)
 
-    for i in range(_mcy.shape[0]):
+    def get_base_name(annotation, index):
+        return list(annotation.keys())[index]
+
+    for i in range(_frame_len):
         current_frame_index = i
         if i == 0:
             before_frame_index = 0
         else:
             before_frame_index = i - 1
-        if i == _mcy.shape[0] - 1:
+        if i == _frame_len - 1:
             after_frame_index = i
         else:
             after_frame_index = i + 1
-        before_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(before_frame_index).zfill(4) + '.tif')
-        after_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(after_frame_index).zfill(4) + '.tif')
-        current_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(current_frame_index).zfill(4) + '.tif')
-        before_fe = get_fe(before_frame_index, before_frame_name)
-        current_fe = get_fe(current_frame_index, current_frame_name)
-        after_fe = get_fe(after_frame_index, after_frame_name)
+        if using_image:
+            before_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(before_frame_index).zfill(4) + '.tif')
+            after_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(after_frame_index).zfill(4) + '.tif')
+            current_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(current_frame_index).zfill(4) + '.tif')
+        else:
+            before_frame_name = get_base_name(annotations, before_frame_index)
+            current_frame_name = get_base_name(annotations, current_frame_index)
+            after_frame_name = get_base_name(annotations, after_frame_index)
+        before_fe = get_fe(before_frame_index, before_frame_name, using_image=using_image)
+        current_fe = get_fe(current_frame_index, current_frame_name, using_image=using_image)
+        after_fe = get_fe(after_frame_index, after_frame_name, using_image=using_image)
         yield before_fe, current_fe, after_fe
 
 
@@ -223,10 +240,15 @@ class TrackingTree(Tree):
         super().__init__()
         self.root = root
         self.track_id = track_id
+        self.mitosis_start_flag = False
         self.__last_layer = []
 
     def __contains__(self, item):
         return item.identifier in self._nodes
+
+    def change_mitosis_flag(self, flag: bool):
+        """当细胞首次进入mitosis的时候，self.mitosis_start_flag设置为True， 当细胞完成分裂的时候，重新设置为false"""
+        self.mitosis_start_flag = flag
 
     @property
     def last_layer(self):
@@ -251,6 +273,25 @@ class MatchRecorder(object):
     匹配记录器，每匹配一帧，更新一下匹配记录。
     记录内容包括：已经完成匹配的细胞，没有匹配的细胞，匹配的精确度
     """
+
+    def __init__(self):
+        pass
+
+
+class CellStatus(object):
+    """记录细胞当前状态，包括周期情况，分裂情况，匹配情况
+    周期情况：是否进入了有丝分裂期， 哪一帧进入的有丝分裂
+    分裂情况：有无发生有丝分裂事件
+    匹配情况：此细胞有无丢失匹配
+    """
+
+    def __init__(self):
+        self.enter_mitosis = False
+        self.enter_mitosis_frame = None
+        self.division_event_happen = False
+        self.division_count = 0
+        self.exist_mitosis = False
+        self.exist_mitosis_frame = None
 
 
 class MatchCache(object):
@@ -280,11 +321,16 @@ class Match(SingleInstance):
     """
 
     def __init__(self):
+        self.mitosis_start_flag = False
         super(Match, self).__init__()
 
     def normalize(self, x, _range=(0, np.pi / 2)):
         """将值变换到区间[0, π/2]"""
         return _range[0] + (_range[1] - _range[0]) * x
+
+    def change_mitosis_flag(self, flag: bool):
+        """当细胞首次进入mitosis的时候，self.mitosis_start_flag设置为True， 当细胞完成分裂的时候，重新设置为false"""
+        self.mitosis_start_flag = flag
 
     def calcIoU(self, cell_1: Cell, cell_2: Cell):
         """
@@ -348,7 +394,10 @@ class Match(SingleInstance):
         """
         dic1 = Vector(cell_1.feature.dic_intensity, cell_1.feature.dic_variance)
         dic2 = Vector(cell_2.feature.dic_intensity, cell_2.feature.dic_variance)
-        return np.sin(self.normalize(dic1.cosSimilar(dic2)))
+        if dic1 and dic2:
+            return np.sin(self.normalize(dic1.cosSimilar(dic2)))
+        else:
+            return 0
 
     def compareMcySimilar(self, cell_1: Cell, cell_2: Cell):
         """
@@ -357,7 +406,10 @@ class Match(SingleInstance):
         """
         mcy1 = Vector(cell_1.feature.mcy_intensity, cell_1.feature.mcy_variance)
         mcy2 = Vector(cell_2.feature.mcy_intensity, cell_2.feature.mcy_variance)
-        return np.sin(self.normalize(mcy1.cosSimilar(mcy2)))
+        if mcy1 and mcy2:
+            return np.sin(self.normalize(mcy1.cosSimilar(mcy2)))
+        else:
+            return 0
 
     def compareShapeSimilar(self, cell_1: Cell, cell_2: Cell):
         """
@@ -455,6 +507,19 @@ class Matcher(object):
                 if similar.get('IoU') > 0:
                     matched[i] = similar
         return matched
+
+    def is_mitosis_start(self, parent: Cell, filter_candidates: List[Cell], area_size_t=1.4, iou_t=0.5):
+        """判断细胞是否进入M期，核心依据是细胞进入Mitosis的时候，体积会变大
+        :returns 如果成功进入M期，返回包含最后一帧的G2和第一帧M的字典信息， 否则，返回False
+        """
+        match_score = {}
+        for i in filter_candidates:
+            if self.match_similar(parent, i).get('IoU') > iou_t:
+                match_score[i] = match_score
+        for cell in match_score:
+            if Rectangle(*parent.bbox).isInclude(cell.bbox) or parent.area * area_size_t <= cell.area:
+                return {'last_G2': parent, 'first_M': cell}
+        return False
 
     def get_similar_sister(self, parent: Cell, matched_cells_dict: dict, area_t=0.8, shape_t=0.03, area_size_t=1.4,
                            iou_t=0.2):
@@ -675,7 +740,7 @@ class Matcher(object):
 class Tracker(object):
     """Tracker对象，负责从头到尾扫描图像帧，进行匹配并分配track id，初始化并更新TrackingTree"""
 
-    def __init__(self, mcy, dic, annotation):
+    def __init__(self, annotation, mcy=None, dic=None):
         self.matcher = Matcher()
         self.trees: TrackingTree
         self.mcy = mcy
@@ -684,7 +749,7 @@ class Tracker(object):
         self._exist_tree_id = []
         self._available_id = 0
         self.init_flag = False
-        self.feature_ext = feature_extract(mcy, dic, annotation)
+        self.feature_ext = feature_extract(mcy=self.mcy, dic=self.dic, jsonfile=self.annotation)
         self.tree_maps = {}
         self.init_tracking_tree(next(self.feature_ext)[0])
 
@@ -864,15 +929,16 @@ class Tracker(object):
             #  如果存在将背景误判为细胞，该分支会很短
             index += 1
             # break
-            # if index > 181:
-            #     break
+            if index > 30:
+                break
 
         fi = 0
         for i in self.trees:
             # if fi != 5:
             #     fi += 1
             #     continue
-            jsf = rf'G:\20x_dataset\copy_of_xy_01\development-dir\track_tree\tree3\tree{fi}.json'
+            # jsf = rf'G:\20x_dataset\copy_of_xy_01\development-dir\track_tree\tree3\tree{fi}.json'
+            jsf = rf'F:\wangjiaqi\src\s6\tree\tree{fi}.json'
             # print('leaves: ', '###'*20)
             print(i.leaves())
             print(i)
@@ -882,7 +948,8 @@ class Tracker(object):
             fi += 1
 
         def save_visualization(rg=369):
-            bg_fname = [fr'G:\20x_dataset\copy_of_xy_01\tif\sub_mcy\copy_of_1_xy01-{n:0>4d}.tif' for n in range(rg)]
+            # bg_fname = [fr'G:\20x_dataset\copy_of_xy_01\tif\sub_mcy\copy_of_1_xy01-{n:0>4d}.tif' for n in range(rg)]
+            bg_fname = [fr'F:\wangjiaqi\src\s6\tif-seq\mcy-{n:0>4d}.tif' for n in range(rg)]
             print(bg_fname)
             images = list(map(lambda x: cv2.imread(x, -1), bg_fname))
             images_dict = dict(zip(list(range(rg)), images))
@@ -903,7 +970,8 @@ class Tracker(object):
                 # break
 
             for i in zip(bg_fname, list(images_dict.values())):
-                fname = os.path.join(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t12',
+                # fname = os.path.join(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t12', os.path.basename(i[0]).replace('.tif', '.png'))
+                fname = os.path.join(r'F:\wangjiaqi\src\s6\track-png\t0',
                                      os.path.basename(i[0]).replace('.tif', '.png'))
                 # fname = os.path.join(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t5',
                 #                      os.path.basename(i[0]))
@@ -965,13 +1033,23 @@ def test():
     plt.imsave(r'C:\Users\91481\Desktop\move.png', bg1)
 
 
+def track_jiaqi():
+    ann = r'F:\wangjiaqi\src\s6\ret-s6.json'
+    mcy = r'F:\wangjiaqi\src\s6\mcy.tif'
+    dic = r'F:\wangjiaqi\src\s6\dic.tif'
+    # tracker = Tracker(mcy, dic, ann)
+    tracker = Tracker(ann)
+    tracker.track()
+
+
 if __name__ == '__main__':
     annotation = r'G:\20x_dataset\copy_of_xy_01\copy_of_1_xy01-sub.json'
     mcy_img = r'G:\20x_dataset\copy_of_xy_01\raw\sub_raw\mcy\copy_of_1_xy01.tif'
     dic_img = r'G:\20x_dataset\copy_of_xy_01\raw\sub_raw\dic\copy_of_1_xy01.tif'
-    tracker = Tracker(mcy_img, dic_img, annotation)
-    tracker.track()
+    # tracker = Tracker(mcy_img, dic_img, annotation)
+    # tracker.track()
 
+    track_jiaqi()
     # test()
 
     # c1 = CellNode(Cell(position=([1, 2], [3, 4])))

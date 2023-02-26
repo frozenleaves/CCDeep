@@ -287,6 +287,8 @@ class Cell(object):
             self.__is_track_id_changeable = True
             self.__parent = None  # 如果细胞发生分裂，则记录该细胞的父细胞的__id
             self.__move_speed = Vector(0, 0)
+            self.mitosis_start_flag=False
+
             if flag is None:
                 self.flag = 'cell'
             else:
@@ -294,6 +296,10 @@ class Cell(object):
             Cell.init_flag = True
             # else:
             #     return
+
+    def change_mitosis_flag(self, flag: bool):
+        """当细胞首次进入mitosis的时候，self.mitosis_start_flag设置为True， 当细胞完成分裂的时候，重新设置为false"""
+        self.mitosis_start_flag = flag
 
     @property
     @lru_cache(maxsize=None)
@@ -460,9 +466,14 @@ class Cell(object):
         return id(self)
 
 
-@dataclasses.dataclass
 class CacheData(object):
-    """"""
+    """
+    缓存对象，用来缓存匹配过的帧，包括之前匹配过的结果
+    缓存内容包括：
+        已经配过的帧索引
+
+
+    """
 
 
 # class Base(ABC):

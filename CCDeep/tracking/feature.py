@@ -90,7 +90,7 @@ class FeatureExtractor(object):
             cls._instances[key].__cells = None
         return cls._instances[key]
 
-    def __init__(self, image_dic: np.ndarray = None, image_mcy: np.ndarray = None, annotation: dict = None,
+    def __init__(self, image_dic: np.ndarray | None = None, image_mcy: np.ndarray | None = None, annotation: dict = None,
                  *args, **kwargs):
         """
 
@@ -99,17 +99,20 @@ class FeatureExtractor(object):
             image_mcy:  np.ndarray mcy图像信息 2048x2048
             annotation: dict 细胞的轮廓和周期等注释信息, json文件中的regions
         """
+        self.__using_image = False
         self.frame_id = None
-        if type(image_mcy) != np.uint8:
-            self.mcy = self.convert_dtype(image_mcy)
-        else:
-            self.mcy = image_mcy
-        if type(image_dic) != np.uint8:
-            self.dic = self.convert_dtype(image_dic)
-        else:
-            self.dic = image_dic
+        if image_mcy and  image_dic:
+            if type(image_mcy) != np.uint8:
+                self.mcy = self.convert_dtype(image_mcy)
+            else:
+                self.mcy = image_mcy
+            if type(image_dic) != np.uint8:
+                self.dic = self.convert_dtype(image_dic)
+            else:
+                self.dic = image_dic
+            self.__using_image = True
         self.annotation = annotation
-        self.image_shape = self.mcy.shape
+        # self.image_shape = self.mcy.shape
         self.frame_index = kwargs.get('frame_index')
 
     def coord2counter(self, coord):
@@ -121,15 +124,14 @@ class FeatureExtractor(object):
         contours = np.array(points)
         return contours
 
-    def coordinate2mask(self, coords: np.ndarray | list | tuple, value: int = 255) -> \
+    def coordinate2mask(self, coords: np.ndarray | list | tuple, shape, value: int = 255) -> \
             List[Mask]:
         """根据轮廓坐标绘制mask, 如果只传入一组轮廓坐标值，请务必将其置于列表中传入函数，
         例如， coord = ([x1 x2 ... xn], [y1 y2 ... yn]),调用时请按照coordinate2mask([coord])调用
         """
         results = []
         for coord in coords:
-            assert self.dic.shape == self.mcy.shape
-            mask = np.zeros(self.mcy.shape, dtype=np.uint8)
+            mask = np.zeros(shape, dtype=np.uint8)
             points = []
             for j in range(len(coord[0])):
                 x = int(coord[0][j])
@@ -208,9 +210,12 @@ class FeatureExtractor(object):
         :param cell:
         :return:
         """
-        dic = self.get_roi_from_coord(cell, self.dic)
-        mcy = self.get_roi_from_coord(cell, self.mcy)
-        return dic, mcy
+        if self.__using_image:
+            dic = self.get_roi_from_coord(cell, self.dic)
+            mcy = self.get_roi_from_coord(cell, self.mcy)
+            return dic, mcy
+        else:
+            return None
 
     def set_cell_image(self, cell: Cell):
         """
@@ -218,9 +223,10 @@ class FeatureExtractor(object):
         :param cell: Cell对象
         :return: 包含图像信息的Cell对象
         """
-        dic, mcy = self.get_cell_image(cell)
-        cell.dic = dic
-        cell.mcy = mcy
+        if self.__using_image:
+            dic, mcy = self.get_cell_image(cell)
+            cell.dic = dic
+            cell.mcy = mcy
         return cell
 
 
@@ -237,13 +243,17 @@ class FeatureExtractor(object):
         :param cell: Cell对象
         :return: Feature对象
         """
-        mcy_intensity = np.mean(cell.mcy)
-        mcy_variance = np.std(cell.mcy) ** 2
-        dic_intensity = np.mean(cell.dic)
-        dic_variance = np.std(cell.dic) ** 2
+        if self.__using_image:
+            mcy_intensity = np.mean(cell.mcy)
+            mcy_variance = np.std(cell.mcy) ** 2
+            dic_intensity = np.mean(cell.dic)
+            dic_variance = np.std(cell.dic) ** 2
+        else:
+            mcy_intensity = mcy_variance = dic_intensity = dic_variance = None
         feature = Feature(center=cell.center, bbox=self.bbox(cell), shape=cell.position,
                           mcy_intensity=mcy_intensity, mcy_variance=mcy_variance,
                           dic_intensity=dic_intensity, dic_variance=dic_variance)
+
         return feature
 
     @lru_cache(maxsize=None)
