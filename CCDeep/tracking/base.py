@@ -6,10 +6,12 @@ import math
 from abc import ABC, abstractmethod
 import warnings
 from typing import List, Tuple
+from enum import Enum
 
 import numpy as np
 from functools import lru_cache
 from matplotlib import pyplot as plt
+
 
 def convert_dtype(__image: np.ndarray) -> np.ndarray:
     """将图像从uint16转化为uint8"""
@@ -27,7 +29,6 @@ def NoneTypeFileter(func):
             if i.mcy.size != 0:
                 cells.append(i)
         return cells
-
     return _filter
 
 
@@ -40,10 +41,89 @@ def warningFilter(func):
     return _warn_filter
 
 
+class MatchStatus(Enum):
+    """匹配状态，包括已匹配，未匹配，丢失匹配三种，是TrackingTree的状态值。"""
+    Matched =  0
+    Unmatched = 1
+    LossMatch = 2
+
+
+class CellStatus(object):
+    """记录当前追踪的细胞当前状态，包括周期情况，分裂情况，匹配情况
+    周期情况：是否进入了有丝分裂期， 哪一帧进入的有丝分裂
+    分裂情况：有无发生有丝分裂事件
+    匹配情况：此细胞有无丢失匹配
+    """
+
+    __status_types = ['enter_mitosis', 'enter_mitosis_frame', 'division_event_happen',
+                      'division_count', 'exit_mitosis', 'exit_mitosis_frame']
+
+    def __init__(self):
+        self.enter_mitosis_threshold = 10
+        self.__enter_mitosis: bool = False
+        self.__enter_mitosis_frame: int | None = None
+        self.__division_event_happen: bool = False       # 此值记录表示细胞至少发生了一次有丝分裂
+        self.__division_count: int = 0
+        self.__exit_mitosis: bool = False
+        self.__exit_mitosis_frame: int | None = None
+        self.__match_status = MatchStatus.Unmatched
+        self.__predict_M_count = 0    # 此值记录预测的M期的数量，如果累计超过3次，则认为进入M期, 此时需要在外部调用enter_mitosis()
+        self.__exit_mitosis_time = self.enter_mitosis_threshold  # 从完成分裂退出mitosis开始，计数，10帧之内不可以再进入mitosis，即当此值小于10的时候，self.__enter_mitosis 不可为True
+
+    @property
+    def status(self):
+        return dict(zip(CellStatus.__status_types,
+                        (self.__enter_mitosis, self.__enter_mitosis_frame, self.__division_event_happen,
+                         self.__division_count,self.__exit_mitosis, self.__exit_mitosis_frame)))
+
+    def get_status(self, status_type):
+        return self.status.get(status_type)
+
+    def enter_mitosis(self, frame):
+        if self.__exit_mitosis_time >= self.enter_mitosis_threshold:
+            self.__enter_mitosis = True
+            self.__exit_mitosis = False
+            self.__exit_mitosis_time = 0
+            self.__enter_mitosis_frame = frame
+
+    def exit_mitosis(self, frame):
+        self.__enter_mitosis = False
+        self.__exit_mitosis = True
+        self.__exit_mitosis_frame = frame
+        self.__division_event_happen = True
+        self.__division_count += 1
+
+    def set_matched_status(self, value):
+        if value == 'matched':
+            self.__match_status = MatchStatus.Matched
+        elif value == 'loss':
+            self.__match_status = MatchStatus.LossMatch
+        else:
+            pass
+
+    def add_M_count(self):
+        self.__predict_M_count += 1
+
+    @property
+    def predict_M_len(self):
+        return self.__predict_M_count
+
+    def add_exist_time(self):
+        if self.__exit_mitosis:
+            self.__exit_mitosis_time += 1
+
+    def __str__(self):
+        return str(self.status)
+
+    def __repr__(self):
+        return self.__str__()
+
+
 class SingleInstance(object):
     """单例模式基类， 如果参数相同，则只会实例化一个对象"""
     _instances = {}
     init_flag = False
+
     def __new__(cls, *args, **kwargs):
         key = str(args) + str(kwargs)
         if key not in cls._instances:
@@ -85,7 +165,7 @@ class Rectangle(object):
         if self_min >= other_min:
             if self_max <= other_max:
                 flag = other
-                return True, flag      # indicate longer instance
+                return True, flag  # indicate longer instance
             else:
                 return False
         else:
@@ -261,9 +341,12 @@ class Vector(np.ndarray):
 
 class Cell(object):
     """
-    定义细胞实例
+    定义细胞实例，此类为Tracking的核心类，所有操作的最小单位均为Cell实例，Cell被实现为条件单例模式：
+    也即是依据传入的参数不同，生成不同的对象，如果传入的参数相同，则为同一个对象。在定义Cell对象的
+    时候，会保证一帧中同一个细胞只有一个Cell实例，而不同帧生成不同的Cell实例
     """
     _instances = {}
+
     # init_flag = False
 
     def __new__(cls, *args, **kwargs):
@@ -272,30 +355,32 @@ class Cell(object):
             cls._instances[key] = super(Cell, cls).__new__(cls)
             cls._instances[key].__feature = None
             cls._instances[key].__feature_flag = False
+            cls._instances[key].__track_id = None
+            cls._instances[key].__branch_id = None
+            cls._instances[key].__inaccurate_track_id = None
+            cls._instances[key].__is_track_id_changeable = True
+            cls._instances[key].mitosis_start_flag = False
+            cls._instances[key].__region = None
         return cls._instances[key]
 
     def __init__(self, position=None, mcy=None, dic=None, phase=None, frame_index=None, flag=None):
-            # if  Cell.init_flag is False:
-            self.position = position  # [(x1, x2 ... xn), (y1, y2 ... yn)]
-            self.mcy = mcy
-            self.dic = dic
-            self.phase = phase
-            self.__id = None
-            self.frame = frame_index
-            self.__track_id = None
-            self.__inaccurate_track_id = None
-            self.__is_track_id_changeable = True
-            self.__parent = None  # 如果细胞发生分裂，则记录该细胞的父细胞的__id
-            self.__move_speed = Vector(0, 0)
-            self.mitosis_start_flag=False
+        # if  Cell.init_flag is False:
+        self.position = position  # [(x1, x2 ... xn), (y1, y2 ... yn)]
+        self.mcy = mcy
+        self.dic = dic
+        self.phase = phase
+        self.__id = None
+        self.frame = frame_index
+        self.__parent = None  # 如果细胞发生分裂，则记录该细胞的父细胞的__id
+        self.__move_speed = Vector(0, 0)
 
-            if flag is None:
-                self.flag = 'cell'
-            else:
-                self.flag = 'gap'
-            Cell.init_flag = True
-            # else:
-            #     return
+        if flag is None:
+            self.flag = 'cell'
+        else:
+            self.flag = 'gap'
+        Cell.init_flag = True
+        # else:
+        #     return
 
     def change_mitosis_flag(self, flag: bool):
         """当细胞首次进入mitosis的时候，self.mitosis_start_flag设置为True， 当细胞完成分裂的时候，重新设置为false"""
@@ -336,7 +421,7 @@ class Cell(object):
         x_len = self.bbox[3] - self.bbox[2]
         y_len = self.bbox[1] - self.bbox[0]
         x_min_expand = self.bbox[2] - mult * x_len
-        x_max_expand = self.bbox[3] + mult* x_len
+        x_max_expand = self.bbox[3] + mult * x_len
         y_min_expand = self.bbox[0] - mult * y_len
         y_max_expand = self.bbox[1] + mult * y_len
         return Rectangle(y_min_expand, y_max_expand, x_min_expand, x_max_expand)
@@ -355,24 +440,33 @@ class Cell(object):
     def area(self):
         return self.polygon_area(tuple(self.position[0]), tuple(self.position[1]))
 
+    def set_region(self, region):
+        self.__region = region
+
+    @property
+    def region(self):
+        return self.__region
+
     @property
     @lru_cache(maxsize=None)
     def bbox(self):
         """bounding box坐标"""
         x0 = math.floor(np.min(self.position[0])) if math.floor(np.min(self.position[0])) > 0 else 0
         x1 = math.ceil(np.max(self.position[0]))
-        y0 = math.floor(np.min(self.position[1]))if math.floor(np.min(self.position[1])) > 0 else 0
+        y0 = math.floor(np.min(self.position[1])) if math.floor(np.min(self.position[1])) > 0 else 0
         y1 = math.ceil(np.max(self.position[1]))
         return y0, y1, x0, x1
 
-    def move(self, speed: Vector, time: int=1):
+    def move(self, speed: Vector, time: int = 1):
         """
         :param speed: 移动速度， Vector对象实例
         :param time: 移动时间，单位为帧
         :return: 移动后新的Cell实例
         """
-        new_position = [tuple([i + speed.x * time for i in self.position[0]]), tuple([j + speed.y * time for j in self.position[1]])]
-        new_cell =  Cell(position=new_position, mcy=self.mcy, dic=self.dic, phase=self.phase, frame_index=self.frame)
+        new_position = [tuple([i + speed.x * time for i in self.position[0]]),
+                        tuple([j + speed.y * time for j in self.position[1]])]
+        new_cell = Cell(position=new_position, mcy=self.mcy, dic=self.dic, phase=self.phase, frame_index=self.frame)
+        new_cell.set_track_id(self.__track_id, 0)
         return new_cell
 
     def set_feature(self, feature):
@@ -387,7 +481,7 @@ class Cell(object):
         else:
             raise ValueError("No available feature! ")
 
-    def set_track_id(self, __track_id, status: 0|1):
+    def set_track_id(self, __track_id, status: 0 | 1):
         """为细胞设置track id， 如果status为0表示追踪不精确，可以被修改，如果status为1，表示追踪精确，不允许被修改"""
         if self.__is_track_id_changeable:
             if status == 1:
@@ -403,8 +497,15 @@ class Cell(object):
     def set_parent_id(self, __parent_id):
         self.__parent = __parent_id
 
-    def set_id(self, cell_id):
+    def set_cell_id(self, cell_id):
         self.__id = cell_id
+
+    def set_branch_id(self, branch_id):
+        self.__branch_id = branch_id
+
+    @property
+    def branch_id(self):
+        return self.__branch_id
 
     @property
     def cell_id(self):
@@ -441,10 +542,7 @@ class Cell(object):
 
     def __str__(self):
         if self.position:
-            if self.__id:
-                return f"Cell {self.__id} at ({self.center[0]: .2f},{self.center[1]: .2f}), frame {self.frame}, {self.phase}"
-            else:
-                return f" Cell at ({self.center[0]: .2f},{self.center[1]: .2f}), frame {self.frame}, {self.phase}"
+            return f" Cell at ({self.center[0]: .2f},{self.center[1]: .2f}), frame {self.frame}, {self.phase}, branch {self.__branch_id}"
         else:
             return "Object Cell"
 
@@ -475,7 +573,6 @@ class CacheData(object):
 
     """
 
-
 # class Base(ABC):
 #     """
 #     定义一些图像的基本操作，包括读写图像，显示图像等
@@ -501,9 +598,3 @@ class CacheData(object):
 #
 #     def read(self, file):
 #         pass
-
-
-
-
-
-

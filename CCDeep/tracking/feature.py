@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import os
 from functools import lru_cache
 import math
 from typing import Tuple, List
@@ -7,6 +9,8 @@ import json
 
 import matplotlib.pyplot as plt
 import numpy as np
+from tifffile import tifffile
+
 from base import Cell, NoneTypeFileter, Vector
 
 
@@ -101,7 +105,7 @@ class FeatureExtractor(object):
         """
         self.__using_image = False
         self.frame_id = None
-        if image_mcy and  image_dic:
+        if (image_mcy is not None) and  (image_dic is not None):
             if type(image_mcy) != np.uint8:
                 self.mcy = self.convert_dtype(image_mcy)
             else:
@@ -201,6 +205,7 @@ class FeatureExtractor(object):
             all_y = region['shape_attributes']['all_points_y']
             phase = region['region_attributes']['phase']
             cell = Cell(position=(all_x, all_y), phase=phase, frame_index=self.frame_index)
+            cell.set_region(region)
             cell_list.append(cell)
         return cell_list
 
@@ -234,8 +239,9 @@ class FeatureExtractor(object):
     @lru_cache(maxsize=None)
     def _cells(self):
         cells = self.get_cell_list()
-        for cell in cells:
-            self.set_cell_image(cell)
+        if self.__using_image:
+            for cell in cells:
+                self.set_cell_image(cell)
         return cells
 
     def extract(self, cell: Cell) -> Feature:
@@ -299,6 +305,64 @@ class FeatureExtractor(object):
 
     def __repr__(self):
         return self.__str__()
+
+
+def imread(filepath: str | os.PathLike) -> np.ndarray:
+    return tifffile.imread(filepath)
+
+
+def get_frame_by_index(image: np.ndarray, index: int) -> np.ndarray:
+    return image[index]
+
+
+def feature_extract(mcy, dic, jsonfile):
+    """逐帧返回FeatureExtractor实例，包含当前帧，前一帧，后一帧"""
+    with open(jsonfile) as f:
+        annotations = json.load(f)
+    if mcy and dic:
+        _dic = imread(dic)
+        _mcy = imread(mcy)
+        _frame_len = _mcy.shape[0]
+        using_image = True
+    else:
+        _frame_len = len(annotations)
+        using_image = False
+
+    def get_fe(frame_index, frame_name, using_image=False):
+        if using_image:
+            dic_image = get_frame_by_index(_dic, frame_index)
+            mcy_image = get_frame_by_index(_mcy, frame_index)
+        else:
+            dic_image = mcy_image = None
+        region = annotations[frame_name.replace('.tif', '.png')]['regions']
+        return FeatureExtractor(image_dic=dic_image, image_mcy=mcy_image, annotation=region, frame_index=frame_index)
+
+    def get_base_name(annotation, index):
+        return list(annotation.keys())[index]
+
+    for i in range(_frame_len):
+        current_frame_index = i
+        if i == 0:
+            before_frame_index = 0
+        else:
+            before_frame_index = i - 1
+        if i == _frame_len - 1:
+            after_frame_index = i
+        else:
+            after_frame_index = i + 1
+        if using_image:
+            before_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(before_frame_index).zfill(4) + '.tif')
+            after_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(after_frame_index).zfill(4) + '.tif')
+            current_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(current_frame_index).zfill(4) + '.tif')
+        else:
+            before_frame_name = get_base_name(annotations, before_frame_index)
+            current_frame_name = get_base_name(annotations, current_frame_index)
+            after_frame_name = get_base_name(annotations, after_frame_index)
+        before_fe = get_fe(before_frame_index, before_frame_name, using_image=using_image)
+        current_fe = get_fe(current_frame_index, current_frame_name, using_image=using_image)
+        after_fe = get_fe(after_frame_index, after_frame_name, using_image=using_image)
+        yield before_fe, current_fe, after_fe
+
 
 
 def show(image):

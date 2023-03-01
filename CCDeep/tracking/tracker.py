@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import dataclasses
+import enum
 from copy import deepcopy
 from functools import wraps, lru_cache
 
@@ -29,70 +30,13 @@ import treelib
 from treelib import Tree, Node
 
 from CCDeep.tracking.prepare import convert_dtype
-from base import Cell, Rectangle, Vector, SingleInstance, CacheData
-from t_error import InsertError, MitosisError, NodeExistError, ErrorMatchMitosis
-from feature import FeatureExtractor
+from base import Cell, Rectangle, Vector, SingleInstance, CacheData, MatchStatus, CellStatus
+from t_error import InsertError, MitosisError, NodeExistError, ErrorMatchMitosis, StatusError
+from feature import FeatureExtractor, feature_extract
 
 TEST = False
 TEST_INDEX = None
 CELL_NUM = 0
-
-
-def imread(filepath: str | os.PathLike) -> np.ndarray:
-    return tifffile.imread(filepath)
-
-
-def get_frame_by_index(image: np.ndarray, index: int) -> np.ndarray:
-    return image[index]
-
-
-def feature_extract(mcy, dic, jsonfile):
-    """逐帧返回FeatureExtractor实例，包含当前帧，前一帧，后一帧"""
-    with open(jsonfile) as f:
-        annotations = json.load(f)
-    if mcy and dic:
-        _dic = imread(dic)
-        _mcy = imread(mcy)
-        _frame_len = _mcy.shape[0]
-        using_image = True
-    else:
-        _frame_len = len(annotations)
-        using_image = False
-
-    def get_fe(frame_index, frame_name, using_image=False):
-        if using_image:
-            dic_image = get_frame_by_index(_dic, frame_index)
-            mcy_image = get_frame_by_index(_mcy, frame_index)
-        else:
-            dic_image = mcy_image = None
-        region = annotations[frame_name.replace('.tif', '.png')]['regions']
-        return FeatureExtractor(image_dic=dic_image, image_mcy=mcy_image, annotation=region, frame_index=frame_index)
-
-    def get_base_name(annotation, index):
-        return list(annotation.keys())[index]
-
-    for i in range(_frame_len):
-        current_frame_index = i
-        if i == 0:
-            before_frame_index = 0
-        else:
-            before_frame_index = i - 1
-        if i == _frame_len - 1:
-            after_frame_index = i
-        else:
-            after_frame_index = i + 1
-        if using_image:
-            before_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(before_frame_index).zfill(4) + '.tif')
-            after_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(after_frame_index).zfill(4) + '.tif')
-            current_frame_name = os.path.basename(mcy).replace('.tif', '-' + str(current_frame_index).zfill(4) + '.tif')
-        else:
-            before_frame_name = get_base_name(annotations, before_frame_index)
-            current_frame_name = get_base_name(annotations, current_frame_index)
-            after_frame_name = get_base_name(annotations, after_frame_index)
-        before_fe = get_fe(before_frame_index, before_frame_name, using_image=using_image)
-        current_fe = get_fe(current_frame_index, current_frame_name, using_image=using_image)
-        after_fe = get_fe(after_frame_index, after_frame_name, using_image=using_image)
-        yield before_fe, current_fe, after_fe
 
 
 class Filter(SingleInstance):
@@ -171,9 +115,12 @@ class CellNode(Node):
         key = str(args) + str(kwargs)
         if key not in cls._instance_:
             cls._instance_[key] = super().__new__(cls)
-            cls._instance_[key].branch_id = None
             cls._instance_[key].status = None
             cls._instance_[key].track_id = None
+            cls._instance_[key].__branch_id = None
+            cls._instance_[key].parent = None
+            cls._instance_[key].childs = []
+            cls._instance_[key].add_tree = False  # 如果被添加到TrackingTree中，设置为True
             cls._instance_[key].life = 5  # 每个分支初始生命值为5，如果匹配成功则+1，如果没有匹配上，或者利用缺省值填充匹配，则-1，如如果生命值为0，则该分支不再参与匹配
             cls._instance_[key]._init_flag = False
         return cls._instance_[key]
@@ -183,21 +130,42 @@ class CellNode(Node):
             self.cell = cell
             if node_type == 'gap':
                 assert fill_gap_index is not None
-            super().__init__((cell, self.branch_id))
+            super().__init__(cell)
             self._init_flag = True
 
     @property
     def identifier(self):
-        return self.__hash__()
+        return str(id(self.cell))
 
     def _set_identifier(self, nid):
         if nid is None:
-            self._identifier = self.__hash__()
+            self._identifier = str(id(self.cell))
         else:
             self._identifier = nid
 
     def get_status(self):
         return self.status
+
+    def set_parent(self, parent: CellNode):
+        self.parent = parent
+
+    def get_parent(self):
+        return self.parent
+
+    def set_childs(self, child: CellNode):
+        self.childs.append(child)
+
+    def get_childs(self):
+        return self.childs
+
+    def set_tree_status(self, status: CellStatus):
+        self.tree_status = status
+        self.add_tree = True
+
+    def get_tree_status(self):
+        if self.add_tree:
+            return self.tree_status
+        return None
 
     def set_status(self, status):
         if status in self.STATUS:
@@ -206,13 +174,11 @@ class CellNode(Node):
             raise ValueError(f"set error status: {status}")
 
     def get_branch_id(self):
-        if self.branch_id is None:
-            raise ValueError("Don't set the branch_id")
-        else:
-            return self.branch_id
+        return self.__branch_id
 
     def set_branch_id(self, branch_id):
-        self.branch_id = branch_id
+        self.__branch_id = branch_id
+        self.cell.set_branch_id(branch_id)
 
     def get_track_id(self):
         if self.track_id is None:
@@ -224,13 +190,16 @@ class CellNode(Node):
         self.track_id = track_id
 
     def __repr__(self):
-        return f"Cell Node of {self.cell}, branch {self.branch_id}"
+        if self.add_tree:
+            return f"Cell Node of {self.cell}, branch {self.get_branch_id()}, status: {self.get_tree_status()}"
+        else:
+            return f"Cell Node of {self.cell}, branch {self.get_branch_id()}"
 
     def __str__(self):
         return self.__repr__()
 
     def __hash__(self):
-        return str(id(self))
+        return int(id(self))
 
 
 class TrackingTree(Tree):
@@ -241,7 +210,10 @@ class TrackingTree(Tree):
         self.root = root
         self.track_id = track_id
         self.mitosis_start_flag = False
+        self.status = CellStatus()
         self.__last_layer = []
+        self._exist_branch_id = []
+        self._available_branch_id = 1
 
     def __contains__(self, item):
         return item.identifier in self._nodes
@@ -250,15 +222,28 @@ class TrackingTree(Tree):
         """当细胞首次进入mitosis的时候，self.mitosis_start_flag设置为True， 当细胞完成分裂的时候，重新设置为false"""
         self.mitosis_start_flag = flag
 
+    def add_node(self, node: CellNode, parent: CellNode = None):
+        node.set_parent(parent)
+        if parent != None:
+            parent.childs.append(node)
+        super().add_node(node, parent)
+
+    def get_parent(self, node: CellNode):
+        return node.get_parent()
+
+    def get_childs(self, node: CellNode):
+        return node.get_childs()
+
     @property
     def last_layer(self):
         return self.__last_layer
 
     @property
     def last_layer_cell(self):
-        cells = set()
+        """返回{叶节点：节点包含的细胞}字典"""
+        cells = {}
         for node in self.leaves():
-            cells.add(node.cell)
+            cells[node.cell] = node
         return cells
 
     def update_last_layer(self, node_list: List[CellNode]):
@@ -266,6 +251,19 @@ class TrackingTree(Tree):
 
     def auto_update_last_layer(self):
         self.__last_layer = self.leaves()
+
+    def branch_id_distributor(self):
+        if self._available_branch_id not in self._exist_branch_id:
+            self._exist_branch_id.append(self._available_branch_id)
+            self._available_branch_id += 1
+            return self._available_branch_id - 1
+        else:
+            i = 1
+            while True:
+                if self._available_branch_id + i not in self._exist_branch_id:
+                    self._available_branch_id += (i + 1)
+                    return self._available_branch_id + i
+                i += 1
 
 
 class MatchRecorder(object):
@@ -276,22 +274,6 @@ class MatchRecorder(object):
 
     def __init__(self):
         pass
-
-
-class CellStatus(object):
-    """记录细胞当前状态，包括周期情况，分裂情况，匹配情况
-    周期情况：是否进入了有丝分裂期， 哪一帧进入的有丝分裂
-    分裂情况：有无发生有丝分裂事件
-    匹配情况：此细胞有无丢失匹配
-    """
-
-    def __init__(self):
-        self.enter_mitosis = False
-        self.enter_mitosis_frame = None
-        self.division_event_happen = False
-        self.division_count = 0
-        self.exist_mitosis = False
-        self.exist_mitosis_frame = None
 
 
 class MatchCache(object):
@@ -313,24 +295,23 @@ class MatchCache(object):
         """刷新缓存"""
 
 
-class Match(SingleInstance):
+class Match(object):
     """
     匹配器，根据前后帧及当前帧来匹配目标并分配ID
     主要用来进行特征比对，计算出相似性
     操作单位：帧
     """
+    _instances = {}
 
-    def __init__(self):
-        self.mitosis_start_flag = False
-        super(Match, self).__init__()
+    def __new__(cls, *args, **kwargs):
+        key = str(args) + str(kwargs)
+        if key not in cls._instances:
+            cls._instances[key] = super().__new__(cls)
+        return cls._instances[key]
 
     def normalize(self, x, _range=(0, np.pi / 2)):
         """将值变换到区间[0, π/2]"""
         return _range[0] + (_range[1] - _range[0]) * x
-
-    def change_mitosis_flag(self, flag: bool):
-        """当细胞首次进入mitosis的时候，self.mitosis_start_flag设置为True， 当细胞完成分裂的时候，重新设置为false"""
-        self.mitosis_start_flag = flag
 
     def calcIoU(self, cell_1: Cell, cell_2: Cell):
         """
@@ -422,16 +403,12 @@ class Match(SingleInstance):
         # return np.cos(self.normalize(score))
         return score
 
+    def __str__(self):
+        return f"Match object at {id(self)}"
+
 
 class Matcher(object):
     """拿子细胞找母细胞，根据下一帧匹配上一帧"""
-    _instances = {}
-
-    def __new__(cls, *args, **kwargs):
-        key = str(args) + str(kwargs)
-        if key not in cls._instances:
-            cls._instances[key] = super().__new__(cls)
-        return cls._instances[key]
 
     def __init__(self):
         self.matcher = Match()
@@ -449,11 +426,8 @@ class Matcher(object):
 
     def predict_next_position(self, parent: Cell):
         """根据速度预测子细胞可能出现的位置，利用预测的子细胞参与匹配"""
-        new_cell = parent.move(parent.move_speed, 1)
-        try:
-            new_cell.set_feature(parent.feature)
-        except ValueError:
-            pass
+        # new_cell = parent.move(parent.move_speed, 1)
+        new_cell = parent
         return new_cell
 
     def _filter(self, child: Cell, cells: List[Cell]):
@@ -463,7 +437,7 @@ class Matcher(object):
         :param cells: 候选匹配项
         :return: 筛选过的候选匹配项
         """
-        return [cell for cell in cells if cell.move(cell.move_speed, 1) in child]
+        return [cell for cell in cells if cell in child]
 
     def match_candidates(self, child: Cell, before_cell_list: List[Cell]):
         """匹配候选项"""
@@ -491,45 +465,41 @@ class Matcher(object):
 
     def match_duplicate_child(self, parent, unmatched_child_list):
         """
-        一旦调用这个函数，意味着候选项中IoU匹配失败，尝试判断是否发生有丝分裂，
-        如果发生有丝分裂，则子代细胞和上一帧母细胞之间应该都有交集，此方法会筛选
-        出所有可能项，但是会包括其他非子细胞的的相邻细胞，需要进一步判断。
+        一旦调用这个函数，意味着候选项中不止一个，此方法计算每个候选项的匹配度
         返回值为{Cell: similar_dict}形式的字典
         """
         matched = {}
         for i in unmatched_child_list:
             similar = self.match_similar(parent, i)
-            if similar.get('IoU') > 0.1:
-                matched[i] = similar
-        if not matched:
-            for i in unmatched_child_list:
-                similar = self.match_similar(parent, i)
-                if similar.get('IoU') > 0:
-                    matched[i] = similar
+            matched[i] = similar
         return matched
 
-    def is_mitosis_start(self, parent: Cell, filter_candidates: List[Cell], area_size_t=1.4, iou_t=0.5):
+    def is_mitosis_start(self, parent: Cell, last_leaves: List[Cell], area_size_t=1.8, iou_t=0.5):
         """判断细胞是否进入M期，核心依据是细胞进入Mitosis的时候，体积会变大
         :returns 如果成功进入M期，返回包含最后一帧的G2和第一帧M的字典信息， 否则，返回False
         """
         match_score = {}
-        for i in filter_candidates:
-            if self.match_similar(parent, i).get('IoU') > iou_t:
-                match_score[i] = match_score
-        for cell in match_score:
-            if Rectangle(*parent.bbox).isInclude(cell.bbox) or parent.area * area_size_t <= cell.area:
-                return {'last_G2': parent, 'first_M': cell}
+        for i in last_leaves:
+            if self.match_similar(parent, i).get('IoU') >= iou_t:
+                match_score[i] = self.match_similar(parent, i)
+        for child_cell in match_score:
+            if Rectangle(*parent.bbox).isInclude(Rectangle(*child_cell.bbox)) or (
+                    child_cell.area / parent.area >= area_size_t):
+                return {'last_G2': parent, 'first_M': child_cell}
         return False
 
-    def get_similar_sister(self, parent: Cell, matched_cells_dict: dict, area_t=0.8, shape_t=0.03, area_size_t=1.4,
-                           iou_t=0.2):
+    def get_similar_sister(self, parent: Cell, matched_cells_dict: dict, area_t=0.8, shape_t=0.03, area_size_t=1.3,
+                           iou_t=0.1):
         """在多个候选项中找到最相似的两个细胞作为子细胞"""
         cell_dict_keys = list(matched_cells_dict.keys())
+        cell_dict_keys.sort(key=lambda cell: cell.area, reverse=True)
+
         for cell in cell_dict_keys:
             if matched_cells_dict[cell].get('IoU') < iou_t:
                 cell_dict_keys.remove(cell)
-            if cell.area * area_size_t > parent.area:
-                cell_dict_keys.remove(cell)
+        if len(cell_dict_keys) > 2:
+            if cell_dict_keys[0].area + cell_dict_keys[1].area > parent.area * area_size_t:
+                cell_dict_keys.remove(cell_dict_keys[0])
         length = len(cell_dict_keys)
         match_result = {}
         for i in range(length - 1):
@@ -546,7 +516,7 @@ class Matcher(object):
             raise MitosisError('cannot match the suitable daughter cells')
 
     def select_mitosis_cells(self, parent: Cell, candidates_child_list: List[Cell], area_t=0.8, shape_t=0.03,
-                             area_size_t=1.8):
+                             area_size_t=1.4):
         """
         如果发生有丝分裂，选择两个子细胞， 调用这个方法的时候，确保大概率发生了分裂事件
         如果返回值为有丝分裂，则需要检查两个子细胞的面积是否正常，如果某一个子细胞的面积过大，则认为是误判
@@ -554,21 +524,20 @@ class Matcher(object):
         :return ([cell_1, cell2], 'match status')
         """
 
-        matched_cells_dict = self.match_duplicate_child(parent, candidates_child_list)
-        if len(matched_cells_dict) < 2:
+        matched_candidates = self.match_duplicate_child(parent, candidates_child_list)
+        matched_cells_dict = self.check_iou(matched_candidates)
+        if not matched_cells_dict:
             raise MitosisError('not enough candidates')
-        elif parent.area < area_size_t * min([i.area for i in candidates_child_list]):  # 如果母细胞太小了，不认为会发生有丝分裂，转向单项判断
-            raise MitosisError('The cell is too small to have cell division !')
         else:
             if len(matched_cells_dict) == 2:
                 cells = list(matched_cells_dict.keys())
+                if max([i.area for i in
+                        list(matched_cells_dict.keys())]) * area_size_t > parent.area:  # 如果母细胞太小了，不认为会发生有丝分裂，转向单项判断
+                    raise MitosisError('The cell is too small to have cell division !')
                 if self.matcher.calcAreaSimilar(cells[0], cells[1]) > area_t and self.matcher.compareShapeSimilar(
                         cells[0], cells[1]) < shape_t:
                     return cells, 'ACCURATE'
                 else:
-                    for c in cells:
-                        if c.area * area_t > parent.area:
-                            raise ErrorMatchMitosis('The candidate cells exist big one, maybe error match!')
                     return cells, 'INACCURATE'
             else:
                 # max_two = heapq.nlargest(2, [sum(sm) for sm in matched_cells_dict.values()])  # 找到匹配结果中最大的两个值
@@ -586,7 +555,7 @@ class Matcher(object):
                 else:
                     return better_sisters, 'INACCURATE'
 
-    def select_child(self, score_dict):
+    def select_single_child(self, score_dict):
         """
         对于有多个IOU匹配的选项，选择相似度更大的那一个, 此处是为了区分发生重叠的细胞，而非发生有丝分裂.
         注意：这个方法匹配出来的结果不一定是准确的，有可能因为细胞交叉导致发生错配，需要在后面的流程中解决 TODO
@@ -594,13 +563,12 @@ class Matcher(object):
         """
         candidates = {}
         for cell in score_dict:
-            if score_dict[cell].get('IoU') > 0.1:
+            if score_dict[cell].get('IoU') > 0.5:
                 candidates[cell] = sum(score_dict[cell].values())
         if not candidates:
             print("第二分支，重新选择")
-            print(score_dict)
             for cell in score_dict:
-                if score_dict[cell].get('IoU') > 0:
+                if score_dict[cell].get('IoU') > 0.1:
                     candidates[cell] = sum(score_dict[cell].values())
         if not candidates:
             print("第三分支，重新选择")
@@ -620,44 +588,65 @@ class Matcher(object):
         else:
             return False
 
-    def _match(self, parent: Cell, no_filter_candidates: FeatureExtractor):
+    def check_iou(self, similar_dict):
+        """检查IoU，为判断进入有丝分裂提供依据，如果拥有IoU>0的匹配项少于2，返回False，否则，返回这两个细胞"""
+        matched = {}
+        for cell in similar_dict:
+            score = similar_dict[cell]
+            if score.get('IoU') > 0.1:
+                matched[cell] = score
+        if len(matched) < 2:
+            return False
+        else:
+            return matched
+
+    def _match(self, parent: Cell, filter_candidates_cells: List[Cell], cell_track_status: CellStatus):
         """比较两个细胞的综合相似度
         is_new: 是否为新出现在视野中的细胞
         """
-        predict_child = self.predict_next_position(parent)
+        # predict_child = self.predict_next_position(parent)
+        predict_child = parent
 
-        filtered_candidates = self.match_candidates(predict_child, no_filter_candidates.cells)
+        # filtered_candidates = self.match_candidates(predict_child, no_filter_candidates_cells)
+        filtered_candidates = filter_candidates_cells
         # print(filtered_candidates)
+
         if len(filtered_candidates) > 0:
             if not self.match_one(predict_child, filtered_candidates):  # 不只有一个选项
-                matched_candidates = self.match_duplicate_child(parent, filtered_candidates)
-                if parent.phase != 'M':  # TODO 在不精确的周期信息中，有可能有问题，需要进一步判断是否已经发生了有丝分裂但是母细胞不是处于M期
-                    return [(self.select_child(matched_candidates), 'ACCURATE')]
+                matched_candidates = self.match_duplicate_child(predict_child, filtered_candidates)
+                if not cell_track_status.status.get('enter_mitosis'):
+                    # if parent.phase != 'M':
+                    return {'matched_cell': [(self.select_single_child(matched_candidates), 'ACCURATE')],
+                            'status': cell_track_status}
+                # elif not self.check_iou(matched_candidates):
+                #     return {'matched_cell': [(self.select_single_child(matched_candidates), 'ACCURATE')],
+                #             'status': cell_track_status}
                 else:
                     matched_result = []
                     try:
-                        sisters, status = self.select_mitosis_cells(parent, filtered_candidates)  # 此时细胞一分为二
+                        sisters, status = self.select_mitosis_cells(predict_child, filtered_candidates)  # 此时细胞一分为二
+                        cell_track_status.exit_mitosis(parent.frame + 1)
                         for sister in sisters:
                             matched_result.append((sister, status))
                     except MitosisError as M:  # 细胞可能仍然处于M期，但是已经完成分开，或者只是被误判为M期
-                        matched_result.append((self.select_child(matched_candidates), 'INACCURATE'))
+                        matched_result.append((self.select_single_child(matched_candidates), 'INACCURATE'))
                         print(M)
                     except ErrorMatchMitosis as M2:
                         # 细胞可能不均等分裂
-                        matched_result.append((self.select_child(matched_candidates), 'INACCURATE'))
+                        matched_result.append((self.select_single_child(matched_candidates), 'INACCURATE'))
                         print(M2)
                     finally:
-                        return matched_result
+                        return {'matched_cell': matched_result, 'status': cell_track_status}
             else:
-                return self.match_one(predict_child, filtered_candidates)
+                return {'matched_cell': self.match_one(predict_child, filtered_candidates), 'status': cell_track_status}
         else:
             # 此处视为没有匹配项，填充预测细胞，
             predict_child_cell = Cell(position=predict_child.position, mcy=predict_child.mcy, dic=predict_child.dic,
                                       phase='predict_' + predict_child.phase, frame_index=predict_child.frame + 1,
                                       flag='gap')
             predict_child_cell.set_feature(predict_child.feature)
-            no_filter_candidates.add_cell(predict_child_cell)
-            return [(predict_child_cell, 'PREDICTED')]
+            # no_filter_candidates.add_cell(predict_child_cell)
+            return {'matched_cell': [(predict_child_cell, 'PREDICTED')], 'status': cell_track_status}
 
         #
         #
@@ -712,6 +701,55 @@ class Matcher(object):
         """对于待匹配帧的的细胞，如果没有被匹配上，或者发生多次匹配，则需要判断是否是新出现的细胞，或者是被遗漏的细胞
         如果是新出现的"""
 
+    def add_child_node(self, tree, child_node: CellNode, parent_node: CellNode):
+        try:
+            tree.add_node(child_node, parent=parent_node)
+            child_node.set_tree_status(tree.status)
+        # except TypeError as E:
+        #     print(E)
+        except NodeExistError as E2:
+            print(E2)
+        except treelib.exceptions.DuplicatedNodeIdError as E3:
+            print(E3)
+
+    def match_single_cell(self, tree: TrackingTree, current_frame: FeatureExtractor):
+        """追踪一个细胞的变化情况"""
+        cells = current_frame.cells
+        parents = tree.last_layer_cell
+        for parent in parents:
+            if parent.phase == 'M':
+                tree.status.add_M_count()
+            if tree.status.predict_M_len >= 3:
+                tree.status.enter_mitosis(parent.frame - 3)
+
+            # predict_child = self.predict_next_position(parent)
+            predict_child = parent
+            filtered_candidates = self.match_candidates(predict_child, cells)
+            before_parent = tree.get_parent(parents[parent])
+            if before_parent:
+                if self.is_mitosis_start(predict_child, [before_parent.cell]):
+                    # if self.is_mitosis_start(predict_child, filtered_candidates):
+                    tree.status.enter_mitosis(parent.frame)
+            match_result = self._match(predict_child, filtered_candidates, tree.status)
+            child_cells = match_result.get('matched_cell')
+            parent_node = CellNode(parent)
+            if len(child_cells) == 1:
+                if child_cells[0][1] == 'PREDICTED':
+                    current_frame.add_cell(child_cells[0][0])
+                child_node = CellNode(child_cells[0][0])
+                # child_node.set_branch_id(parent_node.get_branch_id())
+                child_node.cell.set_branch_id(parent_node.cell.branch_id)
+                self.add_child_node(tree, child_node, parent_node)
+                # child_node.branch_id = parent_node.branch_id
+            else:
+                assert len(child_cells) == 2
+                for cell in child_cells:
+                    new_branch_id = tree.branch_id_distributor()
+                    cell[0].set_branch_id(new_branch_id)
+                    child_node = CellNode(cell[0])
+                    self.add_child_node(tree, child_node, parent_node)
+        tree.status.add_exist_time()
+
     def match(self, before_frame: FeatureExtractor, current_frame: FeatureExtractor):
         """
 
@@ -726,10 +764,15 @@ class Matcher(object):
         for i in before_frame.cells:
             # print("current count: ", len(before_frame.cells))
             # print("next count: ", len(current_frame.cells))
-            child = self._match(i, current_frame)  # [(cell, status)]
-            if len(child) < 1:
-                # print("child : ", child)
+            cells = current_frame.cells
+            predict_child = self.predict_next_position(i)
+            filtered_candidates = self.match_candidates(predict_child, cells)
+            if self.is_mitosis_start(predict_child, cells):
                 pass
+            child = self._match(i, filtered_candidates)  # [(cell, status)]
+            for c in child:
+                if c[1] == 'PREDICTED':
+                    current_frame.add_cell(c[0])
             # print("bbox: ", i.bbox)
             matched.append([(i, 'parent')] + child)
             # print('child: ', child)
@@ -774,8 +817,12 @@ class Tracker(object):
         trees = []
         for i in fe.cells:
             tree = TrackingTree(track_id=self.id_distributor())
+            i.set_track_id(tree.track_id, 1)
+            i.set_branch_id(0)
+            i.set_cell_id(str(i.track_id) + '-' + str(i.branch_id))
             node = CellNode(i)
-            node.branch_id = 0
+            node.set_branch_id(0)
+            node.set_track_id(tree.track_id)
             node.status = 'ACCURATE'
             tree.add_node(node)
             trees.append(tree)
@@ -783,36 +830,20 @@ class Tracker(object):
         self.init_flag = True
         self.trees = trees
 
-    def draw_bbox(self, bg1, bbox, track_id):
+    def draw_bbox(self, bg1, bbox, track_id, branch_id=None):
         if len(bg1.shape) > 2:
             im_rgb1 = bg1
         else:
             im_rgb1 = cv2.cvtColor(convert_dtype(bg1), cv2.COLOR_GRAY2RGB)
         cv2.rectangle(im_rgb1, (bbox[2], bbox[0]), (bbox[3], bbox[1]),
                       [255, 0, 0], 2)
-        cv2.putText(im_rgb1, str(track_id), (bbox[3], bbox[1]), cv2.FONT_HERSHEY_COMPLEX,
-                    1, (0, 0, 255), 1)
+        if branch_id is not None:
+            text = str(track_id) + '-' + str(branch_id)
+        else:
+            text = str(track_id)
+        cv2.putText(im_rgb1, text, (bbox[3], bbox[1]), cv2.FONT_HERSHEY_COMPLEX,
+                    0.5, (0, 0, 255), 1)
         return im_rgb1
-
-    def track_near_frame(self, fe1: FeatureExtractor, fe2: FeatureExtractor, trees: List[TrackingTree]):
-        """跟踪相邻两帧"""
-        for ret in self.matcher.match(fe1, fe2):
-            parent_cell = ret[0]
-            child_cells = ret[1:]
-            current_tracking_tree = self.tree_maps.get(parent_cell)
-            if current_tracking_tree is None:
-                continue
-            parent_node = CellNode(parent_cell)
-            for cell in child_cells:
-                child_node = CellNode(cell)
-                if child_node not in current_tracking_tree:
-                    current_tracking_tree.add_node(child_node, parent=parent_node.identifier)
-                    self.tree_maps[cell] = current_tracking_tree
-                else:
-                    print(child_node, 'already exist')
-            # if len(child_cells) > 1:
-            #     print(child_cells, 'cell division', "###" * 100)
-            #     print(current_tracking_tree)
 
     @staticmethod
     def update_speed(parent: Cell, child: Cell, default: Vector = None):
@@ -840,6 +871,13 @@ class Tracker(object):
             tree.add_node(child_node, parent=parent_node.identifier)
         else:
             raise NodeExistError(child_node)
+
+    def track_near_frame(self, fe1: FeatureExtractor, fe2: FeatureExtractor):
+        for parent in fe1.cells:
+            print(parent)
+            trees = self.get_current_tree(parent)
+            for tree in trees:
+                self.matcher.match_single_cell(tree, fe2)
 
     def track_parent(self, fe1: FeatureExtractor, fe2: FeatureExtractor):
         for ret in self.matcher.match(fe1, fe2):
@@ -886,105 +924,63 @@ class Tracker(object):
     def fe_cache(self, reset_flag):
         """缓存已经匹配过的帧，用来做check"""
 
-    def track(self):
+    def track(self, range=None):
         """从头到尾读取图像帧，开始追踪"""
-        # matcher = Matcher()
         index = 0
-
         for fe_before, fe_current, fe_next in self.feature_ext:
             # print(fe_before, fe_current, fe_next)
             print((str(index) + '-') * 100)
-            self.track_parent(fe_before, fe_current)
+            # self.track_parent(fe_before, fe_current)
+            self.track_near_frame(fe_before, fe_current)
             # self.track_parent(fe_current, fe_next)
             self.check_track(fe_before, fe_current, fe_next)
-            # print(fe_before, len(fe_before.cells), fe_current, len(fe_current.cells), fe_next, len(fe_next.cells))
-            # result = self.matcher.match(fe_before, fe_current)
-            # print(result)
-            # self.matcher.match(fe_before.cells, fe_current.cells
-            # bg_fname = fr'G:\20x_dataset\copy_of_xy_01\tif\mcy\copy_of_1_xy01-{index:0>4d}.tif'
-            # bkground = cv2.imread(bg_fname, -1)
-            # for c in fe_before.cells:
-            #     bkground = Rectangle(*c.bbox).draw(bkground)
-            #     bkground = c.available_range.draw(bkground, color=(255, 255, 255))
-            # Rectangle(0,0,0,0).draw(bkground, isShow=True)
-            # cv2.imwrite(fr'G:\20x_dataset\copy_of_xy_01\development-dir\test-filter\-test-filter{index}.png', bkground)
-
-            # self.track_near_frame(fe_before, fe_current, self.trees)
-            # for c1 in fe_before.cells:
-            #     for c2 in fe_current.cells:
-            #         print(hash(c1)==hash(c2))
-            # for i in self.matcher.match(fe_before.cells, fe_current.cells):
-            #     key = list(i.keys())[0]
-            #     values = list(i.values())[0]
-            #     tree = self.tree_maps.get(key)
-            #     # for v in values:
-            #         # try:
-            #         # tree.add_node(CellNode(v), parent=CellNode(key))
-            #         # except:
-            #         #     print('error !!!!!!!!!!!!!!!')
-            #         # self.tree_maps[v] = tree
-
             # TODO 处理有丝分裂，检测细胞一分为二，
             #  如果细胞存在一分为二，则一个父节点存在多个子节点，同时不对错误的阳性进行筛查，
             #  如果存在将背景误判为细胞，该分支会很短
-            index += 1
-            # break
-            if index > 30:
-                break
+            if range:
+                index += 1
+                if index > range:
+                    break
 
+    def track_tree_to_json(self, filepath):
         fi = 0
         for i in self.trees:
-            # if fi != 5:
-            #     fi += 1
-            #     continue
-            # jsf = rf'G:\20x_dataset\copy_of_xy_01\development-dir\track_tree\tree3\tree{fi}.json'
-            jsf = rf'F:\wangjiaqi\src\s6\tree\tree{fi}.json'
-            # print('leaves: ', '###'*20)
-            print(i.leaves())
-            print(i)
+            # jsf = rf'G:\20x_dataset\copy_of_xy_01\development-dir\track_tree\tree4\tree{fi}.json'
+            jsf = os.path.join(filepath, f'tree-{fi}.json')
             if os.path.exists(jsf):
                 os.remove(jsf)
             i.save2file(jsf)
             fi += 1
 
-        def save_visualization(rg=369):
-            # bg_fname = [fr'G:\20x_dataset\copy_of_xy_01\tif\sub_mcy\copy_of_1_xy01-{n:0>4d}.tif' for n in range(rg)]
-            bg_fname = [fr'F:\wangjiaqi\src\s6\tif-seq\mcy-{n:0>4d}.tif' for n in range(rg)]
-            print(bg_fname)
-            images = list(map(lambda x: cv2.imread(x, -1), bg_fname))
-            images_dict = dict(zip(list(range(rg)), images))
-            print(images_dict.keys())
-            tree_index = 0
-            for i in self.trees:
-                if tree_index == -12:
-                    tree_index += 1
-                    continue
-                else:
-                    # print(tree_index)
-                    # print(i)
-                    for node in i.expand_tree():
-                        frame = i.nodes.get(node).cell.frame
-                        bbox = i.nodes.get(node).cell.bbox
-                        img_bg = images_dict[frame]
-                        images_dict[frame] = self.draw_bbox(img_bg, bbox, i.track_id)
-                # break
+    def visualize(self, background_filename_list, save_dir):
 
-            for i in zip(bg_fname, list(images_dict.values())):
-                # fname = os.path.join(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t12', os.path.basename(i[0]).replace('.tif', '.png'))
-                fname = os.path.join(r'F:\wangjiaqi\src\s6\track-png\t0',
-                                     os.path.basename(i[0]).replace('.tif', '.png'))
-                # fname = os.path.join(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t5',
-                #                      os.path.basename(i[0]))
-                print(fname)
-                cv2.imwrite(fname, i[1])
+        # bg_fname = [fr'G:\20x_dataset\copy_of_xy_01\tif\sub_mcy\copy_of_1_xy01-{n:0>4d}.tif' for n in range(export_range)]
+        bg_fname = background_filename_list
+        # bg_fname = [fr'F:\wangjiaqi\src\s6\tif-seq\mcy-{n:0>4d}.tif' for n in range(rg)]
+        images = list(map(lambda x: cv2.imread(x, -1), bg_fname))
+        images_dict = dict(zip(list(range(len(bg_fname))), images))
+        print(images_dict.keys())
+        for i in self.trees:
+            for node in i.expand_tree():
+                frame = i.nodes.get(node).cell.frame
+                bbox = i.nodes.get(node).cell.bbox
+                img_bg = images_dict[frame]
+                images_dict[frame] = self.draw_bbox(img_bg, bbox, i.track_id, i.get_node(node).cell.branch_id)
 
-        save_visualization()
-        # pass
-        # im1, im2 = self.draw_bbox(img1, img2, self.trees)
-        # cv2.imwrite(r'G:\20x_dataset\copy_of_xy_01\development-dir\track11.png', im1)
-        # cv2.imwrite(r'G:\20x_dataset\copy_of_xy_01\development-dir\track22.png', im2)
+        for i in zip(bg_fname, list(images_dict.values())):
+            fname = os.path.join(save_dir, os.path.basename(i[0]).replace('.tif', '.png'))
+            # fname = os.path.join(r'F:\wangjiaqi\src\s6\track-png\t0',os.path.basename(i[0]).replace('.tif', '.png'))
+            # fname = os.path.join(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t5',
+            #                      os.path.basename(i[0]))
+            # print(fname)
+            cv2.imwrite(fname, i[1])
 
-        # 已实现遍历读取
+    def save_visualize(self, track_range):
+        export_range = track_range + 2
+        bg_fname = [fr'G:\20x_dataset\copy_of_xy_01\tif\sub_mcy\copy_of_1_xy01-{n:0>4d}.tif' for n in
+                    range(export_range)]
+        save_dir = r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t14'
+        self.visualize(bg_fname, save_dir)
 
 
 def test():
@@ -1043,13 +1039,24 @@ def track_jiaqi():
 
 
 if __name__ == '__main__':
-    annotation = r'G:\20x_dataset\copy_of_xy_01\copy_of_1_xy01-sub.json'
+    annotation = r'G:\20x_dataset\copy_of_xy_01\copy_of_1_xy01-sub-id-center.json'
     mcy_img = r'G:\20x_dataset\copy_of_xy_01\raw\sub_raw\mcy\copy_of_1_xy01.tif'
     dic_img = r'G:\20x_dataset\copy_of_xy_01\raw\sub_raw\dic\copy_of_1_xy01.tif'
     # tracker = Tracker(mcy_img, dic_img, annotation)
-    # tracker.track()
+    tracker = Tracker(annotation)
+    tracker.track(50)
+    tracker.track_tree_to_json(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_tree\tree5')
+    tracker.save_visualize(50)
+    # for i in tracker.trees:
+    #     print(i)
+    #     print(i.nodes)
+    #     node_r = i.nodes[list(i.nodes.keys())[0]]
+    #     print(node_r)
+    #     node_n = CellNode(i.nodes[list(i.nodes.keys())[0]].cell)
+    #     print(node_n)
+    #     break
 
-    track_jiaqi()
+    # track_jiaqi()
     # test()
 
     # c1 = CellNode(Cell(position=([1, 2], [3, 4])))
