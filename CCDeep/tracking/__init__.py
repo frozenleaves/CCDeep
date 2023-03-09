@@ -10,13 +10,15 @@
 # 第四步：数据关联，为每个对象分配目标的 ID
 
 
-# TODO  实现json向bounding box的转化 finished
+# Done  实现json向bounding box的转化 finished
 
-# TODO  实现特征提取 finished
+# Done  实现特征提取 finished
 
-# TODO  实现前后帧特征匹配
+# Done  实现前后帧特征匹配 finished
 
 # TODO 处理遮挡后匹配
+
+
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
@@ -273,19 +275,19 @@ d = Rectangle(5, 15, 10, 20)
 #
 #
 
-region = {'shape_attributes':[], 'region_attributes': {}}
-cell = base.Cell(position=[(1, 2, 3, 4), (2, 4, 6, 8)])
-cell2 = base.Cell(position=[(1, 2, 3, 5), (2, 4, 6, 10)])
-
-cell.set_branch_id(0)
-
-print(cell)
-
-cell_t = base.Cell(position=[(1, 2, 3, 4), (2, 4, 6, 8)])
-print(cell_t)
-
-print(cell_t is cell)
+# region = {'shape_attributes':[], 'region_attributes': {}}
+# cell = base.Cell(position=[(1, 2, 3, 4), (2, 4, 6, 8)])
+# cell2 = base.Cell(position=[(1, 2, 3, 5), (2, 4, 6, 10)])
 #
+# cell.set_branch_id(0)
+#
+# print(cell)
+#
+# cell_t = base.Cell(position=[(1, 2, 3, 4), (2, 4, 6, 8)])
+# print(cell_t)
+#
+# print(cell_t is cell)
+# #
 # node = CellNode(cell)
 # print(node)
 # node.set_branch_id(0)

@@ -12,7 +12,6 @@ import numpy as np
 from functools import lru_cache
 from matplotlib import pyplot as plt
 
-
 def convert_dtype(__image: np.ndarray) -> np.ndarray:
     """将图像从uint16转化为uint8"""
     min_16bit = np.min(__image)
@@ -48,7 +47,7 @@ class MatchStatus(Enum):
     LossMatch = 2
 
 
-class CellStatus(object):
+class TreeStatus(object):
     """记录当前追踪的细胞当前状态，包括周期情况，分裂情况，匹配情况
     周期情况：是否进入了有丝分裂期， 哪一帧进入的有丝分裂
     分裂情况：有无发生有丝分裂事件
@@ -58,21 +57,36 @@ class CellStatus(object):
     __status_types = ['enter_mitosis', 'enter_mitosis_frame', 'division_event_happen',
                       'division_count', 'exit_mitosis', 'exit_mitosis_frame']
 
-    def __init__(self):
-        self.enter_mitosis_threshold = 10
-        self.__enter_mitosis: bool = False
-        self.__enter_mitosis_frame: int | None = None
-        self.__division_event_happen: bool = False       # 此值记录表示细胞至少发生了一次有丝分裂
-        self.__division_count: int = 0
-        self.__exit_mitosis: bool = False
-        self.__exit_mitosis_frame: int | None = None
-        self.__match_status = MatchStatus.Unmatched
-        self.__predict_M_count = 0    # 此值记录预测的M期的数量，如果累计超过3次，则认为进入M期, 此时需要在外部调用enter_mitosis()
-        self.__exit_mitosis_time = self.enter_mitosis_threshold  # 从完成分裂退出mitosis开始，计数，10帧之内不可以再进入mitosis，即当此值小于10的时候，self.__enter_mitosis 不可为True
+    _instances = {}
+
+    def __new__(cls, *args, **kwargs):
+        key = str(args) + str(kwargs)
+        if key not in cls._instances:
+            cls._instances[key] = super().__new__(cls)
+            cls._instances[key].__tracking_tree = None
+            cls._instances[key].__init_flag = False
+            cls._instances[key].enter_mitosis_threshold = 10
+            cls._instances[key].__exit_mitosis_time = cls._instances[key].enter_mitosis_threshold
+            # 从完成分裂退出mitosis开始，计数，10帧之内不可以再进入mitosis，即当此值小于10的时候，self.__enter_mitosis 不可为True
+        return cls._instances[key]
+
+
+    def __init__(self, tree: 'TrackingTree'):
+        if not self.__init_flag:
+            self.__tracking_tree = tree
+            self.__enter_mitosis: bool = False
+            self.__enter_mitosis_frame: int | None = None
+            self.__division_event_happen: bool = False       # 此值记录表示细胞至少发生了一次有丝分裂
+            self.__division_count: int = 0
+            self.__exit_mitosis: bool = False
+            self.__exit_mitosis_frame: int | None = None
+            self.__match_status = MatchStatus.Unmatched
+            self.__predict_M_count = 0    # 此值记录预测的M期的数量，如果累计超过3次，则认为进入M期, 此时需要在外部调用enter_mitosis()
+            self.__init_flag = True
 
     @property
     def status(self):
-        return dict(zip(CellStatus.__status_types,
+        return dict(zip(TreeStatus.__status_types,
                         (self.__enter_mitosis, self.__enter_mitosis_frame, self.__division_event_happen,
                          self.__division_count,self.__exit_mitosis, self.__exit_mitosis_frame)))
 
@@ -85,6 +99,7 @@ class CellStatus(object):
             self.__exit_mitosis = False
             self.__exit_mitosis_time = 0
             self.__enter_mitosis_frame = frame
+            self.__exit_mitosis_frame = None
 
     def exit_mitosis(self, frame):
         self.__enter_mitosis = False
@@ -111,6 +126,10 @@ class CellStatus(object):
     def add_exist_time(self):
         if self.__exit_mitosis:
             self.__exit_mitosis_time += 1
+
+    @property
+    def is_mitosis_enter(self):
+        return self.__enter_mitosis
 
     def __str__(self):
         return str(self.status)
@@ -342,13 +361,10 @@ class Vector(np.ndarray):
 class Cell(object):
     """
     定义细胞实例，此类为Tracking的核心类，所有操作的最小单位均为Cell实例，Cell被实现为条件单例模式：
-    也即是依据传入的参数不同，生成不同的对象，如果传入的参数相同，则为同一个对象。在定义Cell对象的
-    时候，会保证一帧中同一个细胞只有一个Cell实例，而不同帧生成不同的Cell实例
+    即依据传入的参数不同，生成不同的对象，如果传入的参数相同，则为同一个对象。在定义Cell对象的时候，
+    会保证一帧中同一个细胞只有一个Cell实例，而不同帧生成不同的Cell实例
     """
     _instances = {}
-
-    # init_flag = False
-
     def __new__(cls, *args, **kwargs):
         key = str(args) + str(kwargs)
         if key not in cls._instances:
@@ -361,6 +377,8 @@ class Cell(object):
             cls._instances[key].__is_track_id_changeable = True
             cls._instances[key].mitosis_start_flag = False
             cls._instances[key].__region = None
+            cls._instances[key].__status = None
+            cls._instances[key].__match_status = False   # 匹配状态，如果参与匹配则设置为True，从未匹配则设置为False
         return cls._instances[key]
 
     def __init__(self, position=None, mcy=None, dic=None, phase=None, frame_index=None, flag=None):
@@ -443,6 +461,14 @@ class Cell(object):
     def set_region(self, region):
         self.__region = region
 
+    def set_status(self, status: TreeStatus):
+        self.__status = status
+
+    @property
+    def status(self):
+        return self.__status
+
+
     @property
     def region(self):
         return self.__region
@@ -494,6 +520,14 @@ class Cell(object):
         else:
             warnings.warn('cannot change the accurate track_id')
 
+    def set_match_status(self, status: bool):
+        self.__match_status = status
+
+    @property
+    def is_be_matched(self):
+        """如果参与过匹配，则为True， 否则，为False"""
+        return self.__match_status
+
     def set_parent_id(self, __parent_id):
         self.__parent = __parent_id
 
@@ -502,6 +536,15 @@ class Cell(object):
 
     def set_branch_id(self, branch_id):
         self.__branch_id = branch_id
+
+    def update_region(self, **kwargs):
+        new_region = self.region
+        if new_region:
+            if 'branch_id' in kwargs:
+                new_region['region_attributes']['branch_id'] = kwargs['branch_id']
+            if 'track_id' in kwargs:
+                new_region['region_attributes']['track_id'] = kwargs['track_id']
+            self.set_region(new_region)
 
     @property
     def branch_id(self):

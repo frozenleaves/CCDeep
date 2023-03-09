@@ -86,3 +86,7 @@ if args.track:
     logging.info(f"Tracking result will saved to {track_output}")
     logging.info('start tracking ...')
     track.start_track(fjson=jsons, fpcna=pcna, fbf=bf, fout=track_output)
+
+if args.track:
+    from CCDeep.tracking import track
+
