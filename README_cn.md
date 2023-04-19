@@ -28,16 +28,20 @@
 3.   使用`conda create -n CCDeep python=3.7`新建一个conda虚拟环境，并使用`conda activate CCDeep`来激活并使用这个环境。
 4.   如果您的电脑具有NVIDIA的GPU，并且您想要通过GPU来加速运算，请按照[步骤三](#step3)来安装`tensorflow-GPU`，以及相应的`cudatoolkiit`和`cudnn`，如果您不需要使用GPU或者电脑上没有NVIDIA的GPU，只需要安装`tensorflow`CPU版本即可。
 5.   请按照下面的命令顺序依次安装依赖的包：
-     1.   `pip install tensorflow==2.4.0` (如果安装GPU版本，请首先按照[步骤三](#step3)安装相应的package，再安装下面的其他package)
-     2.   `pip install stardist==0.8.3` 
-     3.   `pip install opencv-python`
-     4.   `pip install scikit-image`
-     5.   `pip install matplotlib`
-     6.   `pip install tifffile`
-     7.   `pip install pylibtiff` (如果安装报错，或者安装后运行报错，请下载wheel文件离线安装，wheel文件请从<a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#pylibtiff">**这里**</a>选择合适的版本下载。)
-     8.   `pip install bitarray`
-     9.   `pip install trackpy`
-     10.   `pip install pandas`
+     1. `pip install tensorflow==2.4.0` (如果安装GPU版本，请首先按照[步骤三](#step3)安装相应的package，再安装下面的其他package)
+     2. `pip install stardist==0.8.3` 
+     3. `pip install opencv-python`
+     4. `pip install scikit-learn`
+     5. `pip install scikit-image`
+     6. `pip install matplotlib`
+     7. `pip install tifffile`
+     8. `pip install pylibtiff` (如果安装报错，或者安装后运行报错，请下载wheel文件离线安装，wheel文件请从<a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#pylibtiff">**这里**</a>选择合适的版本下载。)
+     9. `pip install bitarray`
+     10. `pip install trackpy`
+     11. `pip install pandas`
+     12. `pip install treelib  `
+     13. `pip install imagecodecs`
+     14. `pip install imutils`
 
 
 
