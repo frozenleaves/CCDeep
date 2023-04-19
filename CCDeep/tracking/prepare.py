@@ -109,14 +109,3 @@ if __name__ == '__main__':
         videoWriter.write(ret)
     videoWriter.release()
 
-
-    # draw_bbox(im, rb)
-    # with open(file) as f:
-    #     data = json.load(f)
-    #     for i in data:
-    #         print(i)
-    #         print(data[i])
-    #         print(data[i].keys())
-    #         print(data[i]['regions'])
-    #         print(data[i]['regions'][0])
-    #         break

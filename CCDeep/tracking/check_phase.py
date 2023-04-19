@@ -1,14 +1,14 @@
 # 对于一个完整的tracking tree：追踪其周期变化过程， 如果周期出现错误，尝试依据细胞分裂的过程来纠正细胞的周期准确性
 import os.path
+from copy import deepcopy
 from typing import List
 import json
 import random
 import pickle
-from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 
-from tracker import Tracker, CellNode, TrackingTree
+from CCDeep.tracking.tracker import Tracker, CellNode, TrackingTree
 
 
 # TODO 将解析好的细胞信息写回annotation.json文件中，包括细胞的代系，周期，追踪信息等等
@@ -110,7 +110,7 @@ class TreeParser(object):
                 yield ch
 
     @staticmethod
-    def check_mitosis_start(start_index, lineage_cell, area_size_t=0.9, mitosis_gap=20, m_predict_threshold=2):
+    def check_mitosis_start(start_index, lineage_cell, area_size_t=0.9, mitosis_gap=20, m_predict_threshold=5):
         """检查M期进入的情况，如果面积符合条件，则检查下一帧，如果下一帧面积过小，则不认为进入了，判定为分割误判,
         如果检查通过，则随机检查接下来3-6帧，如果预测为M期的数量大于等于2，则判定进入M期通过，否则，判定失败
         如果离上一次进入M期间隔过短，同样认为是误判。
@@ -125,7 +125,7 @@ class TreeParser(object):
             predict_m_count = 0
             if len(lineage_cell) - start_index < 5:
                 return True
-            for i in range(min(5, len(lineage_cell) - start_index)):
+            for i in range(min(8, len(lineage_cell) - start_index)):
                 if lineage_cell[start_index + i].cell.phase == 'M':
                     predict_m_count += 1
             if predict_m_count >= m_predict_threshold:
@@ -134,7 +134,7 @@ class TreeParser(object):
                 return False
 
     @staticmethod
-    def check_s_start(start_index, linage_cell, threshold=3):
+    def check_s_start(start_index, linage_cell, threshold=6):
         """
         检查S期的进入，如果该细胞预测为S期，则随机往后检查5帧，
         剩余帧数不满5帧，则检查全部剩余帧数，如果累计预测S期大于threshold，
@@ -142,7 +142,7 @@ class TreeParser(object):
         """
         s_count = 0
         if linage_cell[start_index].cell.phase == 'S':
-            for i in range(min(5, len(linage_cell) - start_index)):
+            for i in range(min(10, len(linage_cell) - start_index)):
                 if linage_cell[start_index + i].cell.phase == 'S':
                     s_count += 1
         if s_count >= threshold:
@@ -150,11 +150,11 @@ class TreeParser(object):
         return False
 
     @staticmethod
-    def check_s_exit(end_index, linage_cell, threshold=3):
+    def check_s_exit(end_index, linage_cell, threshold=6):
         """判断S期退出，判断原理同进入S期，如果细胞开始退出S期，则往后检查"""
         non_s_count = 0
         if linage_cell[end_index].cell.phase != 'S':
-            for i in range(min(5, len(linage_cell) - end_index)):
+            for i in range(min(10, len(linage_cell) - end_index)):
                 if linage_cell[end_index + i].cell.phase != 'S':
                     non_s_count += 1
             if non_s_count >= threshold:
@@ -180,7 +180,7 @@ class TreeParser(object):
                     mitosis_start_index = i + 1
                     break
             elif before_cell_node.cell.phase == 'M' and current_cell_node.cell.area / before_cell_node.cell.area < area_size_t:
-                if self.check_mitosis_start(i, cell_node_line, m_predict_threshold=3):
+                if self.check_mitosis_start(i, cell_node_line, m_predict_threshold=5):
                     mitosis_start_index = i
                     break
         if mitosis_start_index is None:
@@ -352,7 +352,14 @@ def track_tree_to_table(tracker: Tracker, filepath):
     """导出track result到table中"""
     track_detail_columns = ['frame_index', 'track_id', 'cell_id', 'parent_id', 'center_x', 'center_y', 'phase',
                             'mask_of_x_points', 'mask_of_y_points']
+    track_detail_columns_complete_pcnadeep = ['frame', 'trackId', 'lineageId', 'parentTrackId',
+                                              'Center_of_the_object_1', 'Center_of_the_object_0',
+                                              'predicted_class', 'Probability of G1/G2', 'Probability of S',
+                                              'Probability of M',
+                                              'continuous_label', 'major_axis', 'minor_axis', 'mean_intensity',
+                                              'emerging', 'background_mean', 'BF_mean', 'BF_std', 'resolved_class']
     track_detail_dataframe = pd.DataFrame(columns=track_detail_columns)
+    track_detail_dataframe_complete_pcnadeep = pd.DataFrame(columns=track_detail_columns_complete_pcnadeep)
 
     def generate_series(cell_lineage):
         cell_nodes = cell_lineage.get('cells')
@@ -368,6 +375,27 @@ def track_tree_to_table(tracker: Tracker, filepath):
             series_list.append(s)
         return series_list
 
+    def generate_series_pcnadeep(cell_lineage):
+        track_detail_columns_complete_pcnadeep = ['frame', 'trackId', 'lineageId', 'parentTrackId',
+                                                  'Center_of_the_object_1', 'Center_of_the_object_0',
+                                                  'predicted_class', 'Probability of G1/G2', 'Probability of S',
+                                                  'Probability of M',
+                                                  'continuous_label', 'major_axis', 'minor_axis', 'mean_intensity',
+                                                  'emerging', 'background_mean', 'BF_mean', 'BF_std', 'resolved_class']
+        cell_nodes = cell_lineage.get('cells')
+        parent = cell_lineage.get('parent')
+        series_list = []
+        for node in cell_nodes:
+            col = [node.cell.frame, node.cell.cell_id,
+                   node.cell.track_id, parent.cell.cell_id,
+                   node.cell.center[1], node.cell.center[0],
+                   node.cell.phase,
+                   None,None,None,None,None,None,None,None,None,None,None,
+                   node.cell.phase]
+            s = pd.Series(dict(zip(track_detail_columns_complete_pcnadeep, col)))
+            series_list.append(s)
+        return series_list
+
     parser_dict = tracker.parser_dict
     for tree in parser_dict:
         parser = parser_dict[tree]
@@ -376,25 +404,97 @@ def track_tree_to_table(tracker: Tracker, filepath):
             series_list = generate_series(cell_lineage)
             for series in series_list:
                 track_detail_dataframe = track_detail_dataframe.append(series, ignore_index=True)
+            series_list_pcnadeep = generate_series_pcnadeep(cell_lineage)
+            for series_pcnadeep in series_list_pcnadeep:
+                track_detail_dataframe_complete_pcnadeep = track_detail_dataframe_complete_pcnadeep.append(series_pcnadeep, ignore_index=True)
     if os.path.exists(filepath):
         fname = os.path.join(os.path.dirname(filepath), '(new)' + os.path.basename(filepath))
     else:
         fname = filepath
     track_detail_dataframe.to_csv(fname, index=False)
+    track_detail_dataframe_complete_pcnadeep.to_csv(fname + 'pcnadeep.csv', index=False)
 
 
-def track_trees_to_json(tracker: Tracker):
+def track_trees_to_json(tracker: Tracker, output_fname, xrange, basename=None):
     """track结果导出到json文件中"""
-    pass
+    from CCDeep.config import RAW_INPUT_IMAGE_SIZE
+    if basename is None:
+        prefix = 'mcy'
+    else:
+        prefix = basename
+
+    def update_region(node):
+        # print(type(node))
+        region = node.cell.region
+        phase = node.cell.phase
+        track_id = node.cell.track_id
+        cell_id = node.cell.cell_id
+        region['region_attributes']['phase'] = phase
+        region['region_attributes']['track_id'] = track_id
+        region['region_attributes']['cell_id'] = cell_id
+        region['region_attributes']['id'] = track_id
+        node.cell.set_region(region)
+
+    result = {}
+    frame_map = {}
+
+    for frame in range(xrange):
+        image_name = prefix + '-' + str(frame).zfill(4) + '.png'
+        tmp = {
+            image_name: {
+                "filename": image_name,
+                "size": int(RAW_INPUT_IMAGE_SIZE[0] * RAW_INPUT_IMAGE_SIZE[1]),
+                "regions": [],
+                "file_attributes": {}
+            }
+        }
+        result[image_name] = deepcopy(tmp[image_name])
+        frame_map[frame] = image_name
+        del tmp
+    for tree in tracker.trees:
+        for node in tree.all_nodes():
+            frame = node.cell.frame
+            update_region(node)
+            region = node.cell.region
+            image_name = frame_map[frame]
+            tmp_frame = result[image_name]
+            tmp_frame['regions'].append(region)
+    with open(output_fname, 'w') as f:
+        json.dump(result, f)
 
 
-def run(annotation, output_table, track_range=None, save_visualize=False, visualize_file=None, dic=None, mcy=None, track_to_json=False):
-    tracker = run_track(annotation, track_range=track_range, dic=dic, mcy=mcy)
-    track_tree_to_table(tracker, output_table)
-    if save_visualize:
-        tracker.visualize_to_tif(mcy_img, visualize_file, tracker.trees, xrange=track_range)
+def track_tree_to_MOT(tracker: Tracker, output_fname, xrange, basename=None):
+    """将追踪结果导为MOT格式，MOT无法追踪有丝分裂，因此只用于衡量追踪的稳定性"""
+    parser_dict = tracker.parser_dict
+    for tree in parser_dict:
+        parser = parser_dict[tree]
+        for node_index in parser.root_parent_list:
+            cell_lineage = parser.lineage_dict.get(node_index)
+
+
+def run(annotation, output_dir, basename, track_range=None, save_visualize=True, visualize_background_image=None,
+        dic=None, mcy=None, track_to_json=True):
+    if track_range is None:
+        if type(annotation) is str:
+            with open(annotation, encoding='utf-8') as f:
+                data = json.load(f)
+        elif type(annotation) is dict:
+            data = annotation
+        else:
+            raise ValueError(f"annotation type error {type(annotation)}")
+        xrange = len(data)
+    else:
+        xrange = track_range + 2
+    tracker = run_track(annotation, track_range=xrange - 2, dic=dic, mcy=mcy)
+    track_table_fname = os.path.join(output_dir, 'track.csv')
+    track_visualization_fname = os.path.join(output_dir, 'track_visualization.tif')
+    track_json_fname = os.path.join(output_dir, 'result_with_track.json')
+    track_tree_to_table(tracker, track_table_fname)
     if track_to_json:
-        track_trees_to_json(tracker)
+        track_trees_to_json(tracker, track_json_fname, xrange=xrange, basename=basename)
+    if save_visualize:
+        tracker.visualize_to_tif(visualize_background_image, track_visualization_fname, tracker.trees, xrange=xrange)
+
 
 if __name__ == '__main__':
     annotation = r'G:\20x_dataset\copy_of_xy_01\copy_of_1_xy01-sub-id-center.json'
@@ -402,30 +502,15 @@ if __name__ == '__main__':
     dic_img = r'G:\20x_dataset\copy_of_xy_01\raw\sub_raw\dic\copy_of_1_xy01.tif'
     table = r'G:\20x_dataset\copy_of_xy_01\development-dir\track-table-test.csv'
     visual = r'G:\20x_dataset\copy_of_xy_01\development-dir\tracking_visualize-test.tif'
-    # tracker = Tracker(mcy_img, dic_img, annotation)
-    run(annotation, table, save_visualize=True, visualize_file=visual, track_range=50)
+    tracker = run_track(r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\result-GT.json', track_range=250)
+    background_filename_list = [os.path.join(r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\tif-seq', i) for i in
+                                os.listdir(r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\tif-seq')]
+    # print(background_filename_list)
+    print(tracker.trees[9])
+    tracker.visualize_single_tree(tree=tracker.trees[9],
+                                  save_dir=r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\single_tree_visualize',
+                                  background_filename_list=background_filename_list)
 
-    # tracker = run(annotation, 50)
-    #
-    # track_tree_to_table(tracker, table)
-    # tracker.save_visualize(368, tracker.trees)
-    # tracker.visualize_to_tif(mcy_img, visual, tracker.trees, 50)
-
-    # tracker = Tracker(annotation)
-    # tracker.track(50)
-    # tree = tracker.trees[10]
-    # # print(tree)
-    # parse = TreeParser(tree)
-    # parse.search_root_node()
-    #
-    # d = parse.get_lineage_dict()
-    # # for node_index in range(len(parse.root_parent_list)):
-    # for node_index in range(3):
-    #     cell_lineage = parse.lineage_dict.get(parse.root_parent_list[node_index])
-    #     # print(cell_lineage)
-    #     parse.parse_lineage_phase(cell_lineage, root=parse.root_parent_list[node_index], linage_index=node_index)
-    #     print(len(cell_lineage.get('cells')))
-    #     print('***' * 10)
-    #
-    #     # break
-    # tracker.save_visualize(250, tree)
+    # run(annotation=fjson, output_dir=result_save_path, track_range=track_range, dic=fbf, mcy=fpcna,
+    #                 save_visualize=export_visualization, visualize_background_image=fpcna,
+    #                 track_to_json=track_to_json, basename=basename)

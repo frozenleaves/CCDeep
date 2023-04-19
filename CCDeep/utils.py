@@ -16,6 +16,7 @@ import skimage.io
 from skimage.util import img_as_ubyte
 import json
 from libtiff import TIFF
+import tifffile
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -32,7 +33,7 @@ PHASE_MAP = {
 
 def tif2png(img: str, png_dir, gamma=0.1):
     """将tif stack 转化为png"""
-    tif = TIFF.open(img)
+    tif = TIFF.open(img, )
     index = 0
     if not os.path.exists(png_dir):
         os.makedirs(png_dir)
@@ -46,14 +47,35 @@ def tif2png(img: str, png_dir, gamma=0.1):
 
 def readTif(filepath):
     """读取并逐帧返回图像"""
-    tif = TIFF.open(filepath)
-    index = 0
-    for img in tif.iter_images():
-        filename = os.path.basename(filepath).replace('.tif', '-' + str(index).zfill(4) + '.tif')
-        index += 1
-        # if normalize:
-        #     img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX) / 255.0
-        yield img, filename
+    # tif = TIFF.open(filepath)
+    # index = 0
+    # for img in tif.iter_images():
+    #     filename = os.path.basename(filepath).replace('.tif', '-' + str(index).zfill(4) + '.tif')
+    #     index += 1
+    #     # if normalize:
+    #     #     img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX) / 255.0
+    #     yield img, filename
+
+    tif = tifffile.TiffFile(filepath)
+    num = len(tif.pages)
+    if num <= 1:
+        tif.close()
+        tif = tifffile.imread(filepath)
+        for i, frame in enumerate(tif):
+            filename = os.path.basename(filepath).replace('.tif', '-' + str(i).zfill(4) + '.tif')
+            yield frame, filename
+    else:
+        for i in range(num):
+            frame = tif.pages[i].asarray()
+            filename = os.path.basename(filepath).replace('.tif', '-' + str(i).zfill(4) + '.tif')
+            yield frame, filename
+
+def convert_dtype(__image: np.ndarray) -> np.ndarray:
+    """将图像从uint16转化为uint8"""
+    min_16bit = np.min(__image)
+    max_16bit = np.max(__image)
+    image_8bit = np.array(np.rint(255 * ((__image - min_16bit) / (max_16bit - min_16bit))), dtype=np.uint8)
+    return image_8bit
 
 
 def find_positions(array, blank=20):
@@ -329,7 +351,7 @@ class DataGenerator(object):
     为分类算法生成训练数据，其数据结构为X_train = [img array], Y_train = [phase list]
     """
 
-    def __init__(self, training_data_mcy, training_label, train_data_dic=None):
+    def __init__(self, training_data_mcy, training_label, train_data_dic):
         """每一个parser对应一个json数据集，其中包含多张图像
         :param training_data*: 存放tif图像文件所在文件路径
         :param training_label: 对应的json标注文件所在路径
@@ -345,20 +367,28 @@ class DataGenerator(object):
         """生成Data实例返回
         """
         images = self.parser.images
+        index = 0
+        mcy_file_list = os.listdir(self.trainingDataMcy)
+        dic_file_list = os.listdir(self.trainingDataDic)
         for img in tqdm(images, desc="data generate "):
             instances = self.parser.idMap.get(img)
             phases = self.parser.phaseMap.get(img)
-            image_mcy = skimage.io.imread(os.path.join(self.trainingDataMcy, img.replace('.png', '.tif')))
-            image_dic = skimage.io.imread(os.path.join(self.trainingDataDic, img.replace('.png', '.tif')))
+            image_mcy = skimage.io.imread(os.path.join(self.trainingDataMcy, mcy_file_list[index]))
+            image_dic = skimage.io.imread(os.path.join(self.trainingDataDic, dic_file_list[index]))
+            index += 1
             for instance in instances:
                 data = Data()
                 coord = instances[instance]
-                x0 = int(np.min(coord[0]))
+                x0 = math.floor(np.min(coord[0]))
                 x1 = math.ceil(np.max(coord[0]))
-                y0 = int(np.min(coord[1]))
+                y0 = math.floor(np.min(coord[1]))
                 y1 = math.ceil(np.max(coord[1]))
+                if x0 < 0:
+                    x0 = 0
+                if y0 < 0:
+                    y0 = 0
                 if np.min([(x1 - x0), (y1 - y0)]) < 5:
-                    print(f'filter{x1 - x0, y1 - y0} ')
+                    # print(f'filter{x1 - x0, y1 - y0} ')
                     continue
                 data.image_mcy = image_mcy[y0: y1, x0: x1]
                 data.image_dic = image_dic[y0: y1, x0: x1]
@@ -577,5 +607,8 @@ if __name__ == '__main__':
     # plt.imshow(cv2.resize(ret[-1], (1024, 1024)), cmap='gray')
     # plt.show()
     # print(len(ret))
-    tif2png(r'F:\wangjiaqi\src\s6\mcy.tif', r'F:\wangjiaqi\src\s6\png')
+    # tif2png(r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\mcy.tif', r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\png')
+    path = r'F:\wangjiaqi\WJQ\20230312-rpe-wt-src-rpe-pcna-src-5-7\copy05\mcy.tif'
+    for i in readTif(path):
+        print(i)
 

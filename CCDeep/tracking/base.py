@@ -378,7 +378,7 @@ class Cell(object):
             cls._instances[key].mitosis_start_flag = False
             cls._instances[key].__region = None
             cls._instances[key].__status = None
-            cls._instances[key].__match_status = False   # 匹配状态，如果参与匹配则设置为True，从未匹配则设置为False
+            cls._instances[key].__match_status = False   # 匹配状态，如果参与匹配则设置为匹配状态，从未匹配则设置为False
         return cls._instances[key]
 
     def __init__(self, position=None, mcy=None, dic=None, phase=None, frame_index=None, flag=None):
@@ -520,12 +520,12 @@ class Cell(object):
         else:
             warnings.warn('cannot change the accurate track_id')
 
-    def set_match_status(self, status: bool):
+    def set_match_status(self, status: bool | str):
         self.__match_status = status
 
     @property
     def is_be_matched(self):
-        """如果参与过匹配，则为True， 否则，为False"""
+        """如果参与过匹配，则返回match status， 否则，为False"""
         return self.__match_status
 
     def set_parent_id(self, __parent_id):

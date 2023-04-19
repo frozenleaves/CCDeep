@@ -16,6 +16,7 @@ def get_images_and_labels(data_root_dir):
     # get all images' paths (format: string)
     data_root = pathlib.Path(data_root_dir)
     all_image_path = [str(path) for path in list(data_root.glob('*/*'))]
+    # all_image_path = all_image_path[: int(len(all_image_path) *0.01)]
     label_names = sorted(item.name for item in data_root.glob('*/'))
     label_to_index = dict((label, index) for index, label in enumerate(label_names))
     all_image_label = [label_to_index[pathlib.Path(single_image_path).parent.name] for single_image_path in

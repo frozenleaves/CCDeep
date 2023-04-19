@@ -38,10 +38,10 @@ import treelib
 from treelib import Tree, Node
 from tqdm import tqdm
 
-from CCDeep.tracking.prepare import convert_dtype
-from base import Cell, Rectangle, Vector, SingleInstance, CacheData, MatchStatus, TreeStatus
-from t_error import InsertError, MitosisError, NodeExistError, ErrorMatchMitosis, StatusError
-from feature import FeatureExtractor, feature_extract
+from CCDeep.utils import convert_dtype, readTif
+from CCDeep.tracking.base import Cell, Rectangle, Vector, SingleInstance, CacheData, MatchStatus, TreeStatus
+from CCDeep.tracking.t_error import InsertError, MitosisError, NodeExistError, ErrorMatchMitosis, StatusError
+from CCDeep.tracking.feature import FeatureExtractor, feature_extract
 
 TEST = False
 TEST_INDEX = None
@@ -529,7 +529,7 @@ class Matcher(object):
         else:
             raise MitosisError('cannot match the suitable daughter cells')
 
-    def select_mitosis_cells(self, parent: Cell, candidates_child_list: List[Cell], area_t=0.8, shape_t=0.03,
+    def select_mitosis_cells(self, parent: Cell, candidates_child_list: List[Cell], area_t=0.7, shape_t=0.05,
                              area_size_t=1.3):
         """
         如果发生有丝分裂，选择两个子细胞， 调用这个方法的时候，确保大概率发生了分裂事件
@@ -572,7 +572,9 @@ class Matcher(object):
     def select_single_child(self, score_dict):
         """
         对于有多个IOU匹配的选项，选择相似度更大的那一个, 此处是为了区分发生重叠的细胞，而非发生有丝分裂.
-        注意：这个方法匹配出来的结果不一定是准确的，有可能因为细胞交叉导致发生错配，需要在后面的流程中解决 TODO
+        注意：这个方法匹配出来的结果不一定是准确的，有可能因为细胞交叉导致发生错配，需要在后面的流程中解决
+        另外，如果一个细胞被精确匹配后，另一个细胞在没有匹配项的时候（即在识别过程中，下一帧没有识别上，可能会出现重复匹配）
+        这种情况原本应该填充预测细胞。
 
         """
         candidates = {}
@@ -620,7 +622,6 @@ class Matcher(object):
         """
         # predict_child = self.predict_next_position(parent)
         predict_child = parent
-
         # filtered_candidates = self.match_candidates(predict_child, no_filter_candidates_cells)
         filtered_candidates = filter_candidates_cells
         # print(filtered_candidates)
@@ -663,6 +664,7 @@ class Matcher(object):
                                       phase=predict_child_phase, frame_index=predict_child.frame + 1,
                                       flag='gap')
             predict_child_cell.set_feature(predict_child.feature)
+            predict_child_cell.set_region(predict_child.region)
             # no_filter_candidates.add_cell(predict_child_cell)
             return {'matched_cell': [(predict_child_cell, 'PREDICTED')], 'status': cell_track_status}
 
@@ -706,19 +708,6 @@ class Matcher(object):
         #     matched_result = [(child, 'PREDICTED') for child in filtered_candidates]
         # # print('matched single:', self.calc_similar(parent, filtered_candidates[0]))
 
-    def is_new_cell(self):
-        """判断是否为新出现的细胞"""
-
-    def handle_duplicate_match(self):
-        """解决一个细胞被多个细胞匹配"""
-
-    def handle_loss_match(self):
-        """解决细胞没有被匹配上"""
-
-    def rematch(self):
-        """对于待匹配帧的的细胞，如果没有被匹配上，或者发生多次匹配，则需要判断是否是新出现的细胞，或者是被遗漏的细胞
-        如果是新出现的"""
-
     def add_child_node(self, tree, child_node: CellNode, parent_node: CellNode):
         try:
             tree.add_node(child_node, parent=parent_node)
@@ -735,6 +724,7 @@ class Matcher(object):
         cells = current_frame.cells
         parents = tree.last_layer_cell
         for parent in parents:
+            # print(f'\nparent cell math status: {parent.is_be_matched}')
             if parent.phase == 'M':
                 tree.status.add_M_count()
             if tree.status.predict_M_len >= 3:
@@ -755,14 +745,18 @@ class Matcher(object):
             if len(child_cells) == 1:
                 if child_cells[0][1] == 'PREDICTED':
                     current_frame.add_cell(child_cells[0][0])
-                child_node = CellNode(child_cells[0][0])
+                    child_node = CellNode(child_cells[0][0])
+                    child_node.life -= 1
+                else:
+                    child_node = CellNode(child_cells[0][0])
                 # child_node.set_branch_id(parent_node.get_branch_id())
                 child_node.cell.set_branch_id(parent_node.cell.branch_id)
                 child_node.cell.set_status(tree.status)
                 child_node.cell.update_region(track_id=tree.track_id)
                 child_node.cell.update_region(branch_id=parent_node.cell.branch_id)
-                child_node.cell.set_match_status(True)
-                self.add_child_node(tree, child_node, parent_node)
+                child_node.cell.set_match_status(child_cells[0][1])
+                if child_node.life > 0:
+                    self.add_child_node(tree, child_node, parent_node)
                 # child_node.branch_id = parent_node.branch_id
             else:
                 try:
@@ -850,7 +844,7 @@ class Tracker(object):
         trees = []
         for i in fe.cells:
             tree = TrackingTree(track_id=self.id_distributor())
-            i.set_match_status(True)
+            i.set_match_status('ACCURATE')
             i.set_track_id(tree.track_id, 1)
             i.set_branch_id(0)
             i.set_cell_id(str(i.track_id) + '-' + str(i.branch_id))
@@ -866,7 +860,8 @@ class Tracker(object):
         self.init_flag = True
         self.trees = trees
 
-    def draw_bbox(self, bg1, bbox, track_id, branch_id=None, phase=None):
+    def draw_bbox(self, bg1, cell: Cell, track_id, branch_id=None, phase=None):
+        bbox = cell.bbox
         if len(bg1.shape) > 2:
             im_rgb1 = bg1
         else:
@@ -912,7 +907,8 @@ class Tracker(object):
 
     def add_node(self, child_node, parent_node, tree):
         if child_node not in tree:
-            tree.add_node(child_node, parent=parent_node.identifier)
+            # tree.add_node(child_node, parent=parent_node.identifier)
+            tree.add_node(child_node, parent=parent_node)
         else:
             raise NodeExistError(child_node)
 
@@ -937,8 +933,57 @@ class Tracker(object):
             thread_pool_executor.submit(work, parent)
         thread_pool_executor.shutdown(wait=True)
 
+    def is_new_cell(self):
+        """判断是否为新出现的细胞"""
+
+    def handle_duplicate_match(self, duplicate_match_cell):
+        """解决一个细胞被多个细胞匹配"""
+        child_node = CellNode(duplicate_match_cell)
+        tmp = self.get_current_tree(duplicate_match_cell)
+        parent0 = tmp[0].parent(child_node.nid)
+        parent1 = tmp[1].parent(child_node.nid)
+        tree_dict = {parent0: tmp[0], parent1: tmp[1]}
+        sm0 = self.matcher.match_similar(duplicate_match_cell, parent0.cell)
+        sm1 = self.matcher.match_similar(duplicate_match_cell, parent1.cell)
+        match_score = {parent0: sm0['IoU'] + sm0['area'] + (1 - sm0['shape']),
+                       parent1: sm1['IoU'] + sm1['area'] + (1 - sm1['shape'])}
+        truth_parent = min(match_score)
+        error_parent = max(match_score)
+        if len(tree_dict[truth_parent].nodes) < 3:
+            error_parent = truth_parent
+        tree_dict[error_parent].remove_node(child_node.nid)
+        return {error_parent: tree_dict[error_parent]}
+
+    def handle_loss_match(self):
+        """解决细胞没有被匹配上"""
+
+    def rematch(self, error_match_parent: CellNode, error_match_parent_tree: TrackingTree, exclusion_candidate: Cell,
+                fe2: FeatureExtractor):
+        """对于发生错配的细胞，重新匹配，候选项去掉了正确匹配的"""
+        tree = error_match_parent_tree
+        parent = error_match_parent
+        # candidate = self.matcher.match_candidates()
+        fc = [cell for cell in fe2.cells if cell in parent.cell]
+        # print(fc)
+        if exclusion_candidate in fc:
+            # print('exclusion_candidate: ', exclusion_candidate)
+            fc.remove(exclusion_candidate)
+        if fc:
+            try:
+                self.add_node(CellNode(fc[0]), parent_node=parent, tree=tree)
+                fc[0].set_match_status('INACCURATE')
+            except NodeExistError:
+                pass
+
     def check_track(self, fe1: FeatureExtractor, fe2: FeatureExtractor, fe3: FeatureExtractor):
         """检查track结果，查看是否有错误匹配和遗漏， 同时更新匹配状态"""
+        for cell in fe2.cells:
+            tmp = self.get_current_tree(cell)
+            if len(tmp) > 1:
+                # print(list(i.track_id for i in tmp))
+                err_match_dict = self.handle_duplicate_match(duplicate_match_cell=cell)
+                err_parent, err_tree = err_match_dict.popitem()
+                # self.rematch(err_parent, err_tree, cell, fe2)
         for cell in fe1.cells:
             if cell.is_be_matched is False:
                 # print(cell)
@@ -955,7 +1000,7 @@ class Tracker(object):
                 tree.add_node(node)
                 self.trees.append(tree)
                 self.tree_maps[cell] = tree
-                cell.set_match_status(True)
+                cell.set_match_status('INACCURATE')
                 self.matcher.match_single_cell(tree, fe2)
 
     def fe_cache(self, reset_flag):
@@ -964,7 +1009,7 @@ class Tracker(object):
     def track(self, range=None):
         """顺序读取图像帧，开始追踪"""
         index = 0
-        for fe_before, fe_current, fe_next in tqdm(self.feature_ext, total=range):
+        for fe_before, fe_current, fe_next in tqdm(self.feature_ext, total=range, desc='tracking process'):
             # self.track_near_frame(fe_before, fe_current)
             self.track_near_frame_mult_thread(fe_before, fe_current)
             self.check_track(fe_before, fe_current, fe_next)
@@ -996,7 +1041,8 @@ class Tracker(object):
                 frame = i.nodes.get(node).cell.frame
                 bbox = i.nodes.get(node).cell.bbox
                 img_bg = images_dict[frame]
-                images_dict[frame] = self.draw_bbox(img_bg, bbox, i.track_id, i.get_node(node).cell.branch_id,
+                images_dict[frame] = self.draw_bbox(img_bg, i.nodes.get(node).cell, i.track_id,
+                                                    i.get_node(node).cell.branch_id,
                                                     phase=i.get_node(node).cell.phase)
 
         for i in zip(bg_fname, list(images_dict.values())):
@@ -1011,15 +1057,17 @@ class Tracker(object):
         bg_fname = background_filename_list
         images = list(map(lambda x: cv2.imread(x, -1), bg_fname))
         images_dict = dict(zip(list(range(len(bg_fname))), images))
-        print(images_dict.keys())
+        # print(images_dict.keys())
         for node in tree.expand_tree():
             frame = tree.nodes.get(node).cell.frame
             bbox = tree.nodes.get(node).cell.bbox
             img_bg = images_dict[frame]
             phase = tree.nodes.get(node).cell.phase
-            images_dict[frame] = self.draw_bbox(img_bg, bbox, tree.track_id, tree.get_node(node).cell.branch_id, phase)
+            images_dict[frame] = self.draw_bbox(img_bg, tree.nodes.get(node).cell, tree.track_id,
+                                                tree.get_node(node).cell.branch_id, phase)
         for i in zip(bg_fname, list(images_dict.values())):
             fname = os.path.join(save_dir, os.path.basename(i[0]).replace('.tif', '.png'))
+            print(fname)
             cv2.imwrite(fname, i[1])
 
     def save_visualize(self, track_range, tree=None):
@@ -1030,7 +1078,7 @@ class Tracker(object):
         else:
             bg_fname = [os.path.join(r'G:\20x_dataset\copy_of_xy_01\tif\sub_mcy') for i in
                         os.listdir(r'G:\20x_dataset\copy_of_xy_01\tif\sub_mcy')]
-        save_dir = r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t18'
+        save_dir = r'G:\20x_dataset\copy_of_xy_01\development-dir\track_example\t20'
         if type(tree) is TrackingTree:
             self.visualize_single_tree(tree, bg_fname, save_dir)
         elif type(tree) is list:
@@ -1038,101 +1086,94 @@ class Tracker(object):
         else:
             self.visualize(bg_fname, save_dir, tree_list=self.trees)
 
-    def visualize_to_tif(self, background_mcy_image: str, output_tif_path, tree_list, xrange=None):
-        tif = TIFF.open(background_mcy_image)
-        index = 0
+    def visualize_to_tif(self, background_mcy_image: str, output_tif_path, tree_list, xrange=None, single=False):
+        def adjust_gamma(__image, gamma=1.0):
+            image = convert_dtype(__image)
+            brighter_image = np.array(np.power((image / 255), 1/gamma) * 255, dtype=np.uint8)
+            return brighter_image
+
+        tif = readTif(background_mcy_image)
         images_dict = {}
-        for img in tif.iter_images():
-            images_dict[index] = img
-            index += 1
-            if  xrange:
-                if index > xrange:
+        index = 0
+
+        if xrange is not None:
+            for img, _ in tif:
+                if index >= xrange:
                     break
+                alpha = 1.5  # 对比度因子
+                beta = 50  # 亮度因子
+                img= adjust_gamma(img, gamma=1.5)
+                images_dict[index] = img
+                index += 1
+        else:
+            for img, _ in tif:
+                images_dict[index] = img
+                index += 1
         for i in tree_list:
             for node in i.expand_tree():
                 frame = i.nodes.get(node).cell.frame
                 if xrange:
                     if frame > xrange:
                         continue
-                bbox = i.nodes.get(node).cell.bbox
+                # bbox = i.nodes.get(node).cell.bbox
                 img_bg = images_dict[frame]
-                images_dict[frame] = self.draw_bbox(img_bg, bbox, i.track_id, i.get_node(node).cell.branch_id,
+                images_dict[frame] = self.draw_bbox(img_bg, i.nodes.get(node).cell, i.track_id,
+                                                    i.get_node(node).cell.branch_id,
                                                     phase=i.get_node(node).cell.phase)
-
-        with tifffile.TiffWriter(output_tif_path) as tif:
-            for i in tqdm(range(index)):
-                if i > 300:
-                    warnings.warn("the image is to big to save, and the tifffile cannot save the size >4GB tifffile, "
-                                  "so this image will be cut down")
-                    break
-                tif.write(images_dict[i])
-
-
-
-def test():
-    annotation = r'G:\20x_dataset\copy_of_xy_01\copy_of_1_xy01-sub.json'
-    mcy_img = r'G:\20x_dataset\copy_of_xy_01\raw\sub_raw\mcy\copy_of_1_xy01.tif'
-    dic_img = r'G:\20x_dataset\copy_of_xy_01\raw\sub_raw\dic\copy_of_1_xy01.tif'
-    fe = feature_extract(mcy_img, dic_img, annotation)
-    ind = 0
-    fe0 = next(fe)[1]  # 001
-    fe1 = next(fe)[1]  # 012
-    fe2 = next(fe)[1]  # 123
-    fe3 = next(fe)[1]  # 234
-    fe4 = next(fe)[1]  # 345
-    # print(fe0)
-    # print(fe0.cells)
-    # bg = fe0.cells[15].draw(isShow=False)
-    # speed = Vector(5, 10)
-    # plt.imshow(bg)
-    # plt.show()
-    # new_cell = fe0.cells[15].move(speed)
-    # new_cell.draw(background=bg)
-    # plt.imshow(bg)
-    # plt.show()
-
-    c1 = fe0.cells[14]
-    c2 = fe4.cells[13]
-
-    speed = (c2.vector - c1.vector) * 0.8
-    print(speed)
-
-    bg1 = c1.draw()
-    bg2 = c2.draw()
-    plt.imshow(bg1)
-    plt.show()
-    plt.imshow(bg2)
-    plt.show()
-
-    new_cell = c1.move(speed=speed)
-    new_cell.draw(background=bg1, color=(0, 255, 0))
-    plt.imshow(bg1)
-    plt.show()
-
-    c2.draw(background=bg1, color=(255, 255, 255))
-    plt.imshow(bg1)
-    plt.show()
-    plt.imsave(r'C:\Users\91481\Desktop\move.png', bg1)
+        if not single:
+            if not (os.path.exists(output_tif_path) and os.path.isdir(output_tif_path)):
+                os.mkdir(output_tif_path)
+            for i in tqdm(range(index), desc="save tracking visualization"):
+                fname = os.path.join(output_tif_path, f'{os.path.basename(output_tif_path)[:-4]}-{i:0>4d}.tif')
+                tifffile.imwrite(fname, images_dict[i])
+        else:
+            with tifffile.TiffWriter(output_tif_path) as tif:
+                for i in tqdm(range(index)):
+                    if i > 300:
+                        warnings.warn(
+                            "the image is to big to save, and the tifffile cannot save the size >4GB tifffile, "
+                            "so this image will be cut down.")
+                        break
+                    tif.write(images_dict[i])
 
 
-def track_jiaqi():
-    ann = r'F:\wangjiaqi\src\s6\ret-s6.json'
-    mcy = r'F:\wangjiaqi\src\s6\mcy.tif'
-    dic = r'F:\wangjiaqi\src\s6\dic.tif'
-    # tracker = Tracker(mcy, dic, ann)
-    tracker = Tracker(ann)
-    tracker.track()
+def get_cell_line_from_tree(tree: TrackingTree, dic_path: str, mcy_path: str, savepath):
+    """从track tree中获取完整的细胞序列，包括细胞图像，dic和mcy双通道，以及周期，生成的文件名以track_id-branch_id-frame-phase.tif命名"""
+    if not os.path.exists(savepath):
+        os.makedirs(savepath)
+    save_mcy = os.path.join(savepath, 'mcy')
+    save_dic = os.path.join(savepath, 'dic')
+    if not os.path.exists(save_mcy):
+        os.mkdir(save_mcy)
+    if not os.path.exists(save_dic):
+        os.mkdir(save_dic)
+    mcy = tifffile.imread(mcy_path)
+    dic = tifffile.imread(dic_path)
+    for nid in tree.expand_tree():
+        cell = tree.get_node(nid).cell
+        y0, y1, x0, x1 = cell.bbox
+        mcy_img = mcy[cell.frame][y0: y1, x0: x1]
+        dic_img = dic[cell.frame][y0: y1, x0: x1]
+        fname = str(tree.track_id) + '-' + str(cell.branch_id) + '-' + str(cell.frame) + '-' + str(cell.phase[0]) + '.tif'
+        tifffile.imwrite(os.path.join(save_mcy, fname), convert_dtype(mcy_img))
+        tifffile.imwrite(os.path.join(save_dic, fname), convert_dtype(dic_img))
+
+
+        # break
 
 
 if __name__ == '__main__':
-    annotation = r'G:\20x_dataset\copy_of_xy_01\copy_of_1_xy01-sub-id-center.json'
-    mcy_img = r'G:\20x_dataset\copy_of_xy_01\raw\sub_raw\mcy\copy_of_1_xy01.tif'
-    dic_img = r'G:\20x_dataset\copy_of_xy_01\raw\sub_raw\dic\copy_of_1_xy01.tif'
-    # tracker = Tracker(mcy_img, dic_img, annotation)
-    # tracker = Tracker(annotation)
-    # tracker.track(250)
+    annotation = r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\result-GT.json'
+    mcy_img = r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\mcy.tif'
+    dic_img = r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\dic.tif'
+    tracker = Tracker(annotation)
+    # tracker = Tracker(r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\result-GT.json')
+    tracker.track(300)
+    for i in enumerate(tracker.trees):
+        get_cell_line_from_tree(i[1], dic_img, mcy_img,
+                                fr'G:\20x_dataset\evaluate_data\copy_of_1_xy19\cell_lines\{i[0]}')
     # tracker.track_tree_to_json(r'G:\20x_dataset\copy_of_xy_01\development-dir\track_tree\tree5')
-    # tracker.save_visualize(250)
+    # tracker.save_visualize(200)
     # for i in tracker.trees:
     #     print(i)
     #     print(i.nodes)

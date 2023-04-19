@@ -105,7 +105,10 @@ def augment(dic, mcy):
 
 
 if __name__ == '__main__':
-    augment(r'G:\20x_dataset\train_dataset-dev1.3.2\dic', r'G:\20x_dataset\train_dataset-dev1.3.2\mcy')
+    pass
+    # augment(r'G:\20x_dataset\train_dataset-dev1.3.2\dic', r'G:\20x_dataset\train_dataset-dev1.3.2\mcy')
+    # augment(r'H:\CCDeep-data\raw-data\train\segmentation\copy_of_xy_01\train_classification_dataset\dic',
+    #         r'H:\CCDeep-data\raw-data\train\segmentation\copy_of_xy_01\train_classification_dataset\mcy')
     # path = r'G:\20x_dataset\train_dataset-dev1.3.2\train_dic\t'
     # for i in os.listdir(path):
     #     src = os.path.join(path, i)

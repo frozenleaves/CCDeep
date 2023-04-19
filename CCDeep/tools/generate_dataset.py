@@ -2,20 +2,21 @@ from __future__ import annotations
 
 import glob
 from CCDeep.utils import *
+from CCDeep import config
 
-root_dir = r'G:\20x_dataset'
 
-
-def get_path():
+def get_path(root_dir=config.raw):
     dataset_dir = []
     for i in os.listdir(root_dir):
         path = os.path.join(root_dir, i)
-        if os.path.isdir(path) and (i.startswith('dataset') or i.startswith('copy_of')):
-            dataset_dir.append(path)
+        if i.startswith('tmp'):
+            continue
+        dataset_dir.append(path)
+        # if os.path.isdir(path) and (i.startswith('dataset') or i.startswith('copy_of')):
     return dataset_dir
 
 
-def generate(dataset_dir, cellfilter: int = 10, save_train_dataset="train_dataset"):
+def generate(dataset_dir, cellfilter: int = 10, save_train_dataset="train_classification_dataset"):
     dic_dir = os.path.join(dataset_dir, 'tif\\dic')
     mcy_dir = os.path.join(dataset_dir, 'tif\\mcy')
     json_path = glob.glob(dataset_dir + '\\*.json')[0]
@@ -29,7 +30,7 @@ def generate(dataset_dir, cellfilter: int = 10, save_train_dataset="train_datase
     generator = DataGenerator(training_data_mcy=mcy_dir, train_data_dic=dic_dir, training_label=json_path)
     for data in generator.generate():
         if max(data.image_mcy.shape) < cellfilter:
-            print(data.image_mcy.shape)
+            # print(data.image_mcy.shape)
             continue
         else:
             if data.phase == 0:
@@ -47,28 +48,31 @@ def generate(dataset_dir, cellfilter: int = 10, save_train_dataset="train_datase
             if not os.path.exists(os.path.dirname(mcy)):
                 os.makedirs(os.path.dirname(mcy))
             if 0 in data.image_mcy.shape:
-                print('filter')
+                # print('filter')
                 continue
             cv2.imwrite(dic, data.image_dic)
             cv2.imwrite(mcy, data.image_mcy)
-    print(f'{os.path.basename(dataset_dir)} ok')
+    # print(f'{os.path.basename(dataset_dir)} ok')
 
 
-def get_path_60x():
-    root_60x = r'E:\60x_dataset'
-    paths = []
-    labels = []
-    for i in glob.glob(root_60x + '\\*.json'):
-        labels.append(i)
-    img_dir = [x.replace('.json', '') for x in labels]
-    dic_dir = [os.path.join(x, 'dic') for x in img_dir]
-    mcy_dir = [os.path.join(x, 'mcy') for x in img_dir]
-    for n in range(len(labels)):
-        # yield labels[n], dic_dir[n], mcy_dir[n]
-        paths.append((labels[n], dic_dir[n], mcy_dir[n]))
-    return paths
+def generate_data(root_dir):
+    for p in get_path(root_dir):
+        generate(p)
+        # break
 
-
+# def get_path_60x():
+#     root_60x = r'E:\60x_dataset'
+#     paths = []
+#     labels = []
+#     for i in glob.glob(root_60x + '\\*.json'):
+#         labels.append(i)
+#     img_dir = [x.replace('.json', '') for x in labels]
+#     dic_dir = [os.path.join(x, 'dic') for x in img_dir]
+#     mcy_dir = [os.path.join(x, 'mcy') for x in img_dir]
+#     for n in range(len(labels)):
+#         # yield labels[n], dic_dir[n], mcy_dir[n]
+#         paths.append((labels[n], dic_dir[n], mcy_dir[n]))
+#     return paths
 # def generate_60x(path, cellfilter=10):
 #     label = path[0]
 #     dic = path[1]
@@ -108,8 +112,8 @@ def get_path_60x():
 if __name__ == '__main__':
     # for p in get_path_60x()[4:]:
     #     generate_60x(p)
-    for p in get_path():
+    for p in get_path()[5:]:
         print(p)
         generate(p)
-        break
+        # break
     # generate(r'E:\20x_dataset\test')

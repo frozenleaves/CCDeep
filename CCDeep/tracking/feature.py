@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tifffile import tifffile
 
-from base import Cell, NoneTypeFileter, Vector
+from CCDeep.tracking.base import Cell, NoneTypeFileter, Vector
 
 
 class Mask(object):
@@ -91,6 +91,7 @@ class FeatureExtractor(object):
         if key not in cls._instances:
             cls._instances[key] = super(FeatureExtractor, cls).__new__(cls)
             cls._instances[key]._init_cell_flag = False
+            cls._instances[key]._init_flag = False
             cls._instances[key].__cells = None
         return cls._instances[key]
 
@@ -103,21 +104,23 @@ class FeatureExtractor(object):
             image_mcy:  np.ndarray mcy图像信息 2048x2048
             annotation: dict 细胞的轮廓和周期等注释信息, json文件中的regions
         """
-        self.__using_image = False
-        self.frame_id = None
-        if (image_mcy is not None) and  (image_dic is not None):
-            if type(image_mcy) != np.uint8:
-                self.mcy = self.convert_dtype(image_mcy)
-            else:
-                self.mcy = image_mcy
-            if type(image_dic) != np.uint8:
-                self.dic = self.convert_dtype(image_dic)
-            else:
-                self.dic = image_dic
-            self.__using_image = True
-        self.annotation = annotation
-        # self.image_shape = self.mcy.shape
-        self.frame_index = kwargs.get('frame_index')
+        if not self._init_flag:
+            self.__using_image = False
+            self.frame_id = None
+            if (image_mcy is not None) and  (image_dic is not None):
+                if type(image_mcy) != np.uint8:
+                    self.mcy = self.convert_dtype(image_mcy)
+                else:
+                    self.mcy = image_mcy
+                if type(image_dic) != np.uint8:
+                    self.dic = self.convert_dtype(image_dic)
+                else:
+                    self.dic = image_dic
+                self.__using_image = True
+            self.annotation = annotation
+            # self.image_shape = self.mcy.shape
+            self.frame_index = kwargs.get('frame_index')
+            self._init_flag = True
 
     def coord2counter(self, coord):
         points = []
@@ -194,6 +197,17 @@ class FeatureExtractor(object):
         y0, y1, x0, x1 = self.bbox(cell)
         return image[y0: y1, x0: x1]
 
+    def ellipse_points(self, center, rx, ry, num_points=100, theta=0):
+        all_x = []
+        all_y = []
+        for i in range(num_points):
+            t = i * 2 * np.pi / num_points
+            x = center[0] + rx * np.cos(t) * np.cos(theta) - ry * np.sin(t) * np.sin(theta)
+            y = center[1] + rx * np.cos(t) * np.sin(theta) + ry * np.sin(t) * np.cos(theta)
+            all_x.append(x)
+            all_y.append(y)
+        return all_x, all_y
+
     @lru_cache(maxsize=None)
     def get_cell_list(self):
         """
@@ -201,12 +215,28 @@ class FeatureExtractor(object):
         """
         cell_list = []
         for region in self.annotation:
-            all_x = region['shape_attributes']['all_points_x']
-            all_y = region['shape_attributes']['all_points_y']
-            phase = region['region_attributes']['phase']
-            cell = Cell(position=(all_x, all_y), phase=phase, frame_index=self.frame_index)
-            cell.set_region(region)
-            cell_list.append(cell)
+            try:
+                all_x = region['shape_attributes']['all_points_x']
+                all_y = region['shape_attributes']['all_points_y']
+                phase = region['region_attributes']['phase']
+                cell = Cell(position=(all_x, all_y), phase=phase, frame_index=self.frame_index)
+                cell.set_region(region)
+                cell_list.append(cell)
+            except KeyError:
+                # print(region)
+                if region['shape_attributes'].get('name') == 'ellipse':
+                    rx = region['shape_attributes'].get('rx')
+                    ry = region['shape_attributes'].get('ry')
+                    cx = region['shape_attributes'].get('cx')
+                    cy = region['shape_attributes'].get('cy')
+                    theta = region['shape_attributes'].get('theta')
+                    phase = region['region_attributes']['phase']
+                    all_x, all_y = self.ellipse_points((cx, cy), rx, ry, num_points=32, theta=theta)
+                    cell = Cell(position=(all_x, all_y), phase=phase, frame_index=self.frame_index)
+                    cell.set_region(region)
+                    cell_list.append(cell)
+                else:
+                    print(region)
         return cell_list
 
     def get_cell_image(self, cell: Cell):
@@ -315,10 +345,15 @@ def get_frame_by_index(image: np.ndarray, index: int) -> np.ndarray:
     return image[index]
 
 
-def feature_extract(mcy, dic, jsonfile):
+def feature_extract(mcy, dic, jsonfile: str | dict):
     """逐帧返回FeatureExtractor实例，包含当前帧，前一帧，后一帧"""
-    with open(jsonfile) as f:
-        annotations = json.load(f)
+    if type(jsonfile) is str:
+        with open(jsonfile, encoding='utf-8') as f:
+            annotations = json.load(f)
+    elif type(jsonfile) is dict:
+        annotations = jsonfile
+    else:
+        raise TypeError(f"type {type(jsonfile)} are not invalid")
     if mcy and dic:
         _dic = imread(dic)
         _mcy = imread(mcy)

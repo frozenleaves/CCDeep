@@ -21,8 +21,8 @@ import skimage.exposure as exposure
 import json
 import os
 from PIL import Image, ImageDraw
-from .refiner import Refiner
-from .resolver import Resolver
+from CCDeep.tracking_pcnadeep.refiner import Refiner
+from CCDeep.tracking_pcnadeep.resolver import Resolver
 
 
 def expand_bbox(bbox, factor, limit):
@@ -633,10 +633,10 @@ class RefinedParser(object):
 
 def start_track(fjson, fpcna, fbf, fout, image_width=2048, image_height=2048):
     result_save_path = os.path.join(fout, 'track')
-    if not os.path.exists(fout):
+    if not os.path.exists(result_save_path):
         os.makedirs(result_save_path)
-    else:
-        os.makedirs(result_save_path)
+    # else:
+    #     os.makedirs(result_save_path)
 
     table, mask = track_GT_json(fp_json=fjson, fp_pcna=fpcna, fp_bf=fbf, displace=60, gap_fill=5,
                                 sat=1, gamma=1, height=image_height, width=image_width)
@@ -645,13 +645,13 @@ def start_track(fjson, fpcna, fbf, fout, image_width=2048, image_height=2048):
     ann, track_rfd, mt_dic, imprecise = r.doTrackRefine()
     s = Resolver(track_rfd, ann, mt_dic, maxBG=1, minS=1, minM=1, minLineage=10, impreciseExit=imprecise)
     out = s.doResolve()
-    table.to_csv(os.path.join(result_save_path, 'tracked.csv'), index=False)
-    out[0].to_csv(os.path.join(result_save_path, 'refined.csv'), index=False)
-    out[0].to_excel(os.path.join(result_save_path, 'refined.xlsx'), index=False)
-    out[1].to_csv(os.path.join(result_save_path, 'phase.csv'), index=False)
+    table.to_csv(os.path.join(result_save_path, 'tracked-pcnadeep.csv'), index=False)
+    out[0].to_csv(os.path.join(result_save_path, 'refined-pcnadeep.csv'), index=False)
+    out[0].to_excel(os.path.join(result_save_path, 'refined-pcnadeep.xlsx'), index=False)
+    out[1].to_csv(os.path.join(result_save_path, 'phase-pcnadeep.csv'), index=False)
     ref = RefinedParser(out[0])
     ret = pd.DataFrame(ref.export_result()[1])
-    ret.to_csv(os.path.join(result_save_path, 'statistics.csv'), index=False)
+    ret.to_csv(os.path.join(result_save_path, 'statistics-pcnadeep.csv'), index=False)
 
 
 if __name__ == '__main__':

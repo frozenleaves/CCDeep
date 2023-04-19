@@ -24,7 +24,7 @@ class SplitDataset(object):
 
         self.show_progress = show_progress
         if not os.path.exists(self.saved_dataset_dir):
-            os.mkdir(self.saved_dataset_dir)
+            os.makedirs(self.saved_dataset_dir)
         if not os.path.exists(self.saved_train_dir):
             os.mkdir(self.saved_train_dir)
         if not os.path.exists(self.saved_test_dir):

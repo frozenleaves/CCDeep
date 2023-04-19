@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 import numpy as np
 import pprint
-from .utils import deduce_transition, find_daugs, findM
+from CCDeep.utils import deduce_transition, find_daugs, findM
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler
 

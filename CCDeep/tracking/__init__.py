@@ -16,64 +16,63 @@
 
 # Done  实现前后帧特征匹配 finished
 
-# TODO 处理遮挡后匹配
+# Done 处理遮挡后匹配
 
 
 from __future__ import annotations
 
-import matplotlib.pyplot as plt
-import numpy as np
-from treelib import Node
-import cv2
-import base
-from t_error import StatusError
+import sys
 
-frame1 = r'G:\20x_dataset\copy_of_xy_01\tif\mcy\copy_of_1_xy01-0000.tif'
-frame2 = r'G:\20x_dataset\copy_of_xy_01\tif\mcy\copy_of_1_xy01-0001.tif'
+sys.path.append('.')
+sys.path.append('..')
+sys.path.append('../../')
+
+# import base
+# import feature
+# import tracker
+# import check_phase
+# import t_error
+# import prepare
+# import track
+
+# frame1 = r'G:\20x_dataset\copy_of_xy_01\tif\mcy\copy_of_1_xy01-0000.tif'
+# frame2 = r'G:\20x_dataset\copy_of_xy_01\tif\mcy\copy_of_1_xy01-0001.tif'
 
 # image1 = cv2.imread(frame1, -1)
 # image2 = cv2.imread(frame2, -1)
 
 
-from base import Cell
+# from base import Cell
 
 
 
 
-x =np.arange(-2* np.pi, 2*np.pi, 0.01)
-y = np.cos(x)
+# x =np.arange(-2* np.pi, 2*np.pi, 0.01)
+# y = np.cos(x)
 
-from base import Vector
+# from base import Vector
 
-a = Vector(1, 1)
+# a = Vector(1, 1)
 
-b = Vector(2, 2)
+# b = Vector(2, 2)
 
-c = Vector(1, 0)
+# c = Vector(1, 0)
 
 # print(a.cosDistance(b))
 # print(a.cosDistance(c))
 # print(a.cosSimilar(b))
-# print(a.cosSimilar(c))
+# print(a.cosSimilar(c)
 
-def f(x):
-    return x/(x+1)
+# from base import Rectangle
 
-x = np.arange(-10, 10, 0.01)
-
-
-
-
-from base import Rectangle
-
-a = Rectangle(20, 50, 10, 40)
+# a = Rectangle(20, 50, 10, 40)
 
 # b = Rectangle(30, 70, 20, 60)
 # b = Rectangle(60, 80, 20, 60)
-b = Rectangle(10, 60, 20, 30)
+# b = Rectangle(10, 60, 20, 30)
 # b = Rectangle(30, 40, 20, 30)
 
-bg = np.zeros(shape=(100, 100))
+# bg = np.zeros(shape=(100, 100))
 # a.draw(background=bg)
 #
 # print(a.isIntersect(b))
@@ -85,8 +84,8 @@ bg = np.zeros(shape=(100, 100))
 
 # b.draw(background=bg,isShow=True)
 
-c = Rectangle(-10, 20, -20, 40)
-d = Rectangle(5, 15, 10, 20)
+# c = Rectangle(-10, 20, -20, 40)
+# d = Rectangle(5, 15, 10, 20)
 # d.draw(bg)
 # c.draw(bg, isShow=True)
 

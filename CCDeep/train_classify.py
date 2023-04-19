@@ -1,4 +1,6 @@
 from __future__ import absolute_import, division, print_function
+
+import logging
 import math
 import csv
 import tensorflow as tf
@@ -89,7 +91,9 @@ def train():
 
     @tf.function
     def valid_step(images, labels):
+        # print('valid: ', images.dtype)
         predictions = model(images, training=False)
+        # predictions = model(tf.cast(images, tf.float64), training=False)
         v_loss = loss_object(labels, predictions)
         valid_loss(v_loss)
         valid_accuracy(labels, predictions)

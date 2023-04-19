@@ -141,11 +141,16 @@ class Prediction:
             x1 = math.ceil(np.max(i[0]))
             y0 = int(np.min(i[1]))
             y1 = math.ceil(np.max(i[1]))
+            if x0 < 0:
+                x0 = 0
+            if y0 < 0:
+                y0 = 0
             __mcy = self.imgMcy[x0:x1, y0:y1]
             __dic = self.imgDic[x0:x1, y0:y1]
-            if 0 in __mcy.shape or np.max(__mcy.shape) < 30 or np.min(__mcy.shape)<20:
-                # print("filter instance: ", __mcy.shape)
-                continue
+
+            # if 0 in __mcy.shape or np.max(__mcy.shape) < 30 or np.min(__mcy.shape)<20:
+            #     # print("filter instance: ", __mcy.shape)
+            #     continue
             rois_after_filter.append(i)
             mcy = self.__convert_dtype(__mcy)
             dic = self.__convert_dtype(__dic)
