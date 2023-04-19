@@ -119,6 +119,9 @@ class TreeStatus(object):
     def add_M_count(self):
         self.__predict_M_count += 1
 
+    def reset_M_count(self):
+        self.__predict_M_count = 0
+
     @property
     def predict_M_len(self):
         return self.__predict_M_count

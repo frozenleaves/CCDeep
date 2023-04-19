@@ -593,9 +593,9 @@ if __name__ == '__main__':
     #                        train_data_dic=r'C:\Users\Frozenleaves\PycharmProjects\resource\dataset\tif\dic')
     #     x = d3.generate()
 
-    # json2mask(JsonFilePath=r'G:\20x_dataset\copy_of_xy_01\copy_of_1_xy01.json',
-    #           img=r'G:\20x_dataset\copy_of_xy_01\tif\mcy',
-    #           mask=r'G:\20x_dataset\copy_of_xy_01\tif\masks')
+    json2mask(JsonFilePath=r'E:\paper\evaluate_data\split-copy19\group0\group-0000.json',
+              img=r'E:\paper\evaluate_data\split-copy19\group0\tif-seq',
+              mask=r'E:\paper\evaluate_data\split-copy19\group0\masks')
     # image = r'G:\20221130-10A-b10-1-10-ctrl-11-20-SR\copy01\mcy\copy01-test.tif'
     # img = cv2.imread(image, -1)
     # ret = divideImage(img, 4, 4)
@@ -608,7 +608,5 @@ if __name__ == '__main__':
     # plt.show()
     # print(len(ret))
     # tif2png(r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\mcy.tif', r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\png')
-    path = r'F:\wangjiaqi\WJQ\20230312-rpe-wt-src-rpe-pcna-src-5-7\copy05\mcy.tif'
-    for i in readTif(path):
-        print(i)
+
 

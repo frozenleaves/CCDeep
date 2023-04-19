@@ -186,7 +186,7 @@ class TreeParser(object):
         if mitosis_start_index is None:
             # 两种情况， 第一种是细胞进入M期之后才开始追踪， 第二种是细胞已经完成分裂但是还没有进入到下一个M期
             if len(cell_node_line) < 5:
-                if exist_m_frame >= 2:
+                if exist_m_frame >= 3:
                     for cell_node in cell_node_line:
                         cell_node.cell.phase = 'M'
                     lineage['m2_start'] = 0
@@ -308,12 +308,16 @@ class TreeParser(object):
         cell_id = str(self.tree.track_id) + '_' + str(branch_id)
         if linage_index == 0:
             root.cell.set_cell_id(cell_id)
+            root.cell.set_branch_id(branch_id)
             lineage['parent'] = root
         else:
             parent = lineage['parent']
             parent.cell.set_cell_id(parent.cell.cell_id)
+            # parent.cell.set_cell_id(cell_id)
+            # parent.cell.set_branch_id(branch_id)
         for cell_node in cell_node_line:
             cell_node.cell.set_cell_id(cell_id)
+            cell_node.cell.set_branch_id(branch_id)
             cell_node.cell.set_track_id(self.tree.track_id, 1)
 
     def parse_lineage_phase(self, lineage: dict, root: CellNode, linage_index):
@@ -322,6 +326,9 @@ class TreeParser(object):
         self.parse_s(lineage, root, linage_index)
         self.parse_g1_g2(lineage, root, linage_index)
         self.set_cell_id(lineage, root, linage_index)
+
+    def parse_lineage_branch_id(self, lineage, branch_id):
+        pass
 
 
 def pares_single_tree(tree: TrackingTree):
@@ -489,6 +496,8 @@ def run(annotation, output_dir, basename, track_range=None, save_visualize=True,
     track_table_fname = os.path.join(output_dir, 'track.csv')
     track_visualization_fname = os.path.join(output_dir, 'track_visualization.tif')
     track_json_fname = os.path.join(output_dir, 'result_with_track.json')
+    tracktree_save_path = os.path.join(output_dir, 'tracktree')
+    tracker.track_tree_to_json(tracktree_save_path)
     track_tree_to_table(tracker, track_table_fname)
     if track_to_json:
         track_trees_to_json(tracker, track_json_fname, xrange=xrange, basename=basename)

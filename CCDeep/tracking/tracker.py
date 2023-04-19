@@ -487,7 +487,7 @@ class Matcher(object):
             matched[i] = similar
         return matched
 
-    def is_mitosis_start(self, pre_parent: Cell, last_leaves: List[Cell], area_size_t=1.8, iou_t=0.5):
+    def is_mitosis_start(self, pre_parent: Cell, last_leaves: List[Cell], area_size_t=1.6, iou_t=0.5):
         """判断细胞是否进入M期，核心依据是细胞进入Mitosis的时候，体积会变大
         :returns 如果成功进入M期，返回包含最后一帧的G2和第一帧M的字典信息， 否则，返回False
         """
@@ -509,11 +509,18 @@ class Matcher(object):
         cell_dict_keys.sort(key=lambda cell: cell.area, reverse=True)
 
         for cell in cell_dict_keys:
-            if matched_cells_dict[cell].get('IoU') < iou_t:
+            # if matched_cells_dict[cell].get('IoU') < iou_t:
+            if matched_cells_dict[cell].get('IoU') == 0:
                 cell_dict_keys.remove(cell)
+        # if len(cell_dict_keys) > 2:
+        #     if cell_dict_keys[0].area + cell_dict_keys[1].area > parent.area * area_size_t:
+        #         cell_dict_keys.remove(cell_dict_keys[0])
         if len(cell_dict_keys) > 2:
-            if cell_dict_keys[0].area + cell_dict_keys[1].area > parent.area * area_size_t:
-                cell_dict_keys.remove(cell_dict_keys[0])
+            remove_dict_list = list(matched_cells_dict).sort(key=lambda x: x[1]['IoU'], reverse=True)[2:]
+            for i in remove_dict_list:
+                key = list(i.keys())[0]
+                cell_dict_keys.remove(key)
+
         length = len(cell_dict_keys)
         match_result = {}
         for i in range(length - 1):
@@ -521,7 +528,8 @@ class Matcher(object):
             for j in range(len(cell_dict_keys)):
                 cell_2 = cell_dict_keys[j]
                 score = self.match_similar(cell_1, cell_2)
-                if score.get('area') >= area_t and score.get('shape') <= shape_t:
+                # if score.get('area') >= area_t and score.get('shape') <= shape_t:
+                if score.get('area') >= area_t:
                     match_result[(cell_1, cell_2)] = score.get('area') + score.get('IoU')
         if match_result:
             max_score_cells = max(match_result, key=match_result.get)
@@ -546,10 +554,11 @@ class Matcher(object):
             if len(matched_cells_dict) == 2:
                 cells = list(matched_cells_dict.keys())
                 if max([i.area for i in
-                        list(matched_cells_dict.keys())]) * area_size_t > parent.area:  # 如果母细胞太小了，不认为会发生有丝分裂，转向单项判断
+                        list(matched_cells_dict.keys())]) > parent.area * area_size_t:  # 如果母细胞太小了，不认为会发生有丝分裂，转向单项判断
                     raise MitosisError('The cell is too small to have cell division !')
-                if self.matcher.calcAreaSimilar(cells[0], cells[1]) > area_t and self.matcher.compareShapeSimilar(
-                        cells[0], cells[1]) < shape_t:
+                # if self.matcher.calcAreaSimilar(cells[0], cells[1]) > area_t and self.matcher.compareShapeSimilar(
+                #         cells[0], cells[1]) < shape_t:
+                if self.matcher.calcAreaSimilar(cells[0], cells[1]) > area_t:
                     return cells, 'ACCURATE'
                 else:
                     return cells, 'INACCURATE'
@@ -609,7 +618,7 @@ class Matcher(object):
         matched = {}
         for cell in similar_dict:
             score = similar_dict[cell]
-            if score.get('IoU') > 0.1:
+            if score.get('IoU') > 0.05:
                 matched[cell] = score
         if len(matched) < 2:
             return False
@@ -720,11 +729,16 @@ class Matcher(object):
             pass
 
     def match_single_cell(self, tree: TrackingTree, current_frame: FeatureExtractor):
-        """追踪一个细胞的变化情况"""
+        """追踪单个细胞的变化情况"""
         cells = current_frame.cells
         parents = tree.last_layer_cell
+        m_counter = 10
         for parent in parents:
             # print(f'\nparent cell math status: {parent.is_be_matched}')
+            m_counter -= 1
+            if not m_counter:
+                m_counter = 10
+                tree.status.reset_M_count()
             if parent.phase == 'M':
                 tree.status.add_M_count()
             if tree.status.predict_M_len >= 3:
@@ -763,7 +777,7 @@ class Matcher(object):
                     assert len(child_cells) == 2
                 except AssertionError:
                     # self._match(predict_child, filtered_candidates, tree.status)
-                    pass
+                    continue
 
                 for cell in child_cells:
                     new_branch_id = tree.branch_id_distributor()
@@ -947,8 +961,8 @@ class Tracker(object):
         sm1 = self.matcher.match_similar(duplicate_match_cell, parent1.cell)
         match_score = {parent0: sm0['IoU'] + sm0['area'] + (1 - sm0['shape']),
                        parent1: sm1['IoU'] + sm1['area'] + (1 - sm1['shape'])}
-        truth_parent = min(match_score)
-        error_parent = max(match_score)
+        truth_parent = max(match_score)
+        error_parent = min(match_score)
         if len(tree_dict[truth_parent].nodes) < 3:
             error_parent = truth_parent
         tree_dict[error_parent].remove_node(child_node.nid)
@@ -1019,6 +1033,8 @@ class Tracker(object):
                     break
 
     def track_tree_to_json(self, filepath):
+        if not os.path.exists(filepath):
+            os.makedirs(filepath)
         fi = 0
         for i in self.trees:
             # jsf = rf'G:\20x_dataset\copy_of_xy_01\development-dir\track_tree\tree4\tree{fi}.json'
