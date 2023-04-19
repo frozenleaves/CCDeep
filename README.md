@@ -30,7 +30,7 @@ English | [简体中文](./README_cn.md)
 3.   Using `conda create -n CCDeep python=3.7` to create a new conda virtual environment, and using `conda activate CCDeep`to activate and use this environment.
 4.   If your computer has NVIDIA GPU and you want to speed up the running through GPU，please follow [step3](#step3) to install `tensorflow-GPU`，and corresponding`cudatoolkiit`and `cudnn`. If you don't need to use GPU or there is no NVIDIA GPU on your computer, just install the `tensorflow` CPU version.
 5.   Please install the dependent packages in the following command：
-   1. `pip install tensorflow==2.4.0` (If you install the GPU version，please following the [step3](#step3)step3 to install the corresponding packages，and then install other packages below.)
+     1. `pip install tensorflow==2.4.0` (If you install the GPU version，please following the [step3](#step3)step3 to install the corresponding packages，and then install other packages below.)
      2. `pip install stardist==0.8.3` 
      3. `pip install opencv-python`
      4. `pip install scikit-learn`
