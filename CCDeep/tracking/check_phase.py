@@ -341,10 +341,10 @@ def pares_single_tree(tree: TrackingTree):
     return parser
 
 
-def run_track(annotation, track_range=None, dic=None, mcy=None):
+def run_track(annotation, track_range=None, dic=None, mcy=None, speed_filename=None):
     tracker = Tracker(annotation, dic=dic, mcy=mcy)
     if track_range:
-        tracker.track(range=track_range)
+        tracker.track(range=track_range, speed_filename=speed_filename)
     else:
         tracker.track()
     parser_dict = {}
@@ -492,7 +492,8 @@ def run(annotation, output_dir, basename, track_range=None, save_visualize=True,
         xrange = len(data)
     else:
         xrange = track_range + 2
-    tracker = run_track(annotation, track_range=xrange - 2, dic=dic, mcy=mcy)
+    speed_output_filename = os.path.join(output_dir, 'track_speed.csv')
+    tracker = run_track(annotation, track_range=xrange - 2, dic=dic, mcy=mcy, speed_filename=speed_output_filename)
     track_table_fname = os.path.join(output_dir, 'track.csv')
     track_visualization_fname = os.path.join(output_dir, 'track_visualization.tif')
     track_json_fname = os.path.join(output_dir, 'result_with_track.json')

@@ -7,8 +7,8 @@ import motmetrics as mm
 
 # predict_file = r"G:\20x_dataset\evaluate_data\src06\trackmeta.csv"
 # predict_file = r"G:\20x_dataset\evaluate_data\src06\track\track.csv"
-predict_file = r"G:\20x_dataset\evaluate_data\src06\tracking_output\track.csv"
-ground_truth_file = r"G:\20x_dataset\evaluate_data\src06\track-GT.csv"
+predict_file = r"E:\paper\evaluate_data\src06\tracking_output\track.csv"
+ground_truth_file = r"E:\paper\evaluate_data\src06\track-GT.csv"
 
 # 从CSV文件中读取跟踪和真实轨迹
 predict_df = pd.read_csv(predict_file)
@@ -30,7 +30,7 @@ def evaluate(truth_df, predict_df):
                     'mostly_tracked', 'partially_tracked',
                     'mostly_lost', 'num_false_positives',
                     'num_misses', 'num_switches',
-                    'num_fragmentations', 'mota', 'motp'
+                    'num_fragmentations', 'mota',
                     ]
 
     acc = mm.MOTAccumulator()
@@ -63,6 +63,7 @@ def evaluate(truth_df, predict_df):
     # can be a string (e.g. "mota") or a list of strings (e.g. ["mota", "num_false_positives"]).
     metrics = mm.metrics.create()
     summary = metrics.compute(acc, metrics=metric_names)
+    # summary = metrics.compute(acc, metrics=list(mm.metrics.motchallenge_metrics))
 
     strsummary = mm.io.render_summary(
         summary,
@@ -80,6 +81,7 @@ def evaluate(truth_df, predict_df):
     # Print the summary of metrics
     print(summary)
     print(type(summary))
+    print(mm.io.render_summary(summary, formatters=metrics.formatters, namemap=mm.io.motchallenge_metric_names))
     # summary.to_csv(r'G:\20x_dataset\evaluate_data\split-copy19\group0\track_evaluate.csv')
 
 

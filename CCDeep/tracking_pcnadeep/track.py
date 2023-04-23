@@ -637,21 +637,30 @@ def start_track(fjson, fpcna, fbf, fout, image_width=2048, image_height=2048):
         os.makedirs(result_save_path)
     # else:
     #     os.makedirs(result_save_path)
+    try:
+        table, mask = track_GT_json(fp_json=fjson, fp_pcna=fpcna, fp_bf=fbf, displace=60, gap_fill=5,
+                                    sat=1, gamma=1, height=image_height, width=image_width)
+        r = Refiner(track=table, mode='TRH', search_range=10, minM=1, maxBG=1, sample_freq=1 / 5,
+                    threshold_mt_F=100, threshold_mt_T=20)
+        ann, track_rfd, mt_dic, imprecise = r.doTrackRefine()
+        s = Resolver(track_rfd, ann, mt_dic, maxBG=1, minS=1, minM=1, minLineage=10, impreciseExit=imprecise)
+        out = s.doResolve()
+        table.to_csv(os.path.join(result_save_path, 'tracked-pcnadeep.csv'), index=False)
+        out[0].to_csv(os.path.join(result_save_path, 'refined-pcnadeep.csv'), index=False)
 
-    table, mask = track_GT_json(fp_json=fjson, fp_pcna=fpcna, fp_bf=fbf, displace=60, gap_fill=5,
-                                sat=1, gamma=1, height=image_height, width=image_width)
-    r = Refiner(track=table, mode='TRH', search_range=10, minM=1, maxBG=1, sample_freq=1 / 5,
-                threshold_mt_F=100, threshold_mt_T=20)
-    ann, track_rfd, mt_dic, imprecise = r.doTrackRefine()
-    s = Resolver(track_rfd, ann, mt_dic, maxBG=1, minS=1, minM=1, minLineage=10, impreciseExit=imprecise)
-    out = s.doResolve()
-    table.to_csv(os.path.join(result_save_path, 'tracked-pcnadeep.csv'), index=False)
-    out[0].to_csv(os.path.join(result_save_path, 'refined-pcnadeep.csv'), index=False)
-    out[0].to_excel(os.path.join(result_save_path, 'refined-pcnadeep.xlsx'), index=False)
-    out[1].to_csv(os.path.join(result_save_path, 'phase-pcnadeep.csv'), index=False)
-    ref = RefinedParser(out[0])
-    ret = pd.DataFrame(ref.export_result()[1])
-    ret.to_csv(os.path.join(result_save_path, 'statistics-pcnadeep.csv'), index=False)
+        df1 = out[0][
+            ["frame", "trackId", "parentTrackId", "Center_of_the_object_1", "Center_of_the_object_0", "resolved_class"]]
+        df1 = df1.rename(columns={"frame": "frame_index", "trackId": "cell_id", "parentTrackId": "parent_id",
+                                  "Center_of_the_object_1": "center_y", "Center_of_the_object_0": "center_x",
+                                  "resolved_class": "phase"})
+        df1.to_csv(os.path.join(result_save_path, 'refined-pcnadeep(CCDeep_format).csv'), index=False)
+        out[0].to_excel(os.path.join(result_save_path, 'refined-pcnadeep.xlsx'), index=False)
+        out[1].to_csv(os.path.join(result_save_path, 'phase-pcnadeep.csv'), index=False)
+        ref = RefinedParser(out[0])
+        ret = pd.DataFrame(ref.export_result()[1])
+        ret.to_csv(os.path.join(result_save_path, 'statistics-pcnadeep.csv'), index=False)
+    except KeyError:
+        pass
 
 
 if __name__ == '__main__':

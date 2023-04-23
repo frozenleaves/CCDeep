@@ -12,6 +12,7 @@ import numpy as np
 from functools import lru_cache
 from matplotlib import pyplot as plt
 
+
 def convert_dtype(__image: np.ndarray) -> np.ndarray:
     """将图像从uint16转化为uint8"""
     min_16bit = np.min(__image)
@@ -28,6 +29,7 @@ def NoneTypeFileter(func):
             if i.mcy.size != 0:
                 cells.append(i)
         return cells
+
     return _filter
 
 
@@ -42,7 +44,7 @@ def warningFilter(func):
 
 class MatchStatus(Enum):
     """匹配状态，包括已匹配，未匹配，丢失匹配三种，是TrackingTree的状态值。"""
-    Matched =  0
+    Matched = 0
     Unmatched = 1
     LossMatch = 2
 
@@ -70,25 +72,24 @@ class TreeStatus(object):
             # 从完成分裂退出mitosis开始，计数，10帧之内不可以再进入mitosis，即当此值小于10的时候，self.__enter_mitosis 不可为True
         return cls._instances[key]
 
-
     def __init__(self, tree: 'TrackingTree'):
         if not self.__init_flag:
             self.__tracking_tree = tree
             self.__enter_mitosis: bool = False
             self.__enter_mitosis_frame: int | None = None
-            self.__division_event_happen: bool = False       # 此值记录表示细胞至少发生了一次有丝分裂
+            self.__division_event_happen: bool = False  # 此值记录表示细胞至少发生了一次有丝分裂
             self.__division_count: int = 0
             self.__exit_mitosis: bool = False
             self.__exit_mitosis_frame: int | None = None
             self.__match_status = MatchStatus.Unmatched
-            self.__predict_M_count = 0    # 此值记录预测的M期的数量，如果累计超过3次，则认为进入M期, 此时需要在外部调用enter_mitosis()
+            self.__predict_M_count = 0  # 此值记录预测的M期的数量，如果累计超过3次，则认为进入M期, 此时需要在外部调用enter_mitosis()
             self.__init_flag = True
 
     @property
     def status(self):
         return dict(zip(TreeStatus.__status_types,
                         (self.__enter_mitosis, self.__enter_mitosis_frame, self.__division_event_happen,
-                         self.__division_count,self.__exit_mitosis, self.__exit_mitosis_frame)))
+                         self.__division_count, self.__exit_mitosis, self.__exit_mitosis_frame)))
 
     def get_status(self, status_type):
         return self.status.get(status_type)
@@ -368,6 +369,7 @@ class Cell(object):
     会保证一帧中同一个细胞只有一个Cell实例，而不同帧生成不同的Cell实例
     """
     _instances = {}
+
     def __new__(cls, *args, **kwargs):
         key = str(args) + str(kwargs)
         if key not in cls._instances:
@@ -381,7 +383,7 @@ class Cell(object):
             cls._instances[key].mitosis_start_flag = False
             cls._instances[key].__region = None
             cls._instances[key].__status = None
-            cls._instances[key].__match_status = False   # 匹配状态，如果参与匹配则设置为匹配状态，从未匹配则设置为False
+            cls._instances[key].__match_status = False  # 匹配状态，如果参与匹配则设置为匹配状态，从未匹配则设置为False
         return cls._instances[key]
 
     def __init__(self, position=None, mcy=None, dic=None, phase=None, frame_index=None, flag=None):
@@ -470,7 +472,6 @@ class Cell(object):
     @property
     def status(self):
         return self.__status
-
 
     @property
     def region(self):

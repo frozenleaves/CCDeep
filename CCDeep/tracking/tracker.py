@@ -9,8 +9,11 @@
 
 """
 from __future__ import annotations
+
+import csv
 import os
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 from libtiff import TIFF
@@ -425,6 +428,7 @@ class Matcher(object):
 
     def __init__(self):
         self.matcher = Match()
+        self.WEIGHT = {'IoU': 0.6, 'shape': 0.1, 'area': 0.3}
 
     def draw_bbox(self, bg1, bbox, track_id=None):
         if len(bg1.shape) > 2:
@@ -586,20 +590,38 @@ class Matcher(object):
         这种情况原本应该填充预测细胞。
 
         """
+
+        def calc_weight(candidate_score_dict):
+            result = {}
+            for cell in candidate_score_dict:
+                score_dict = candidate_score_dict[cell]
+                value =  score_dict['IoU'] * self.WEIGHT.get('IoU') + \
+                       score_dict['shape'] * self.WEIGHT.get('shape') + score_dict['area'] * self.WEIGHT.get('area')
+                result[cell] = value
+            return max(result, key=result.get)
+
         candidates = {}
         for cell in score_dict:
             if score_dict[cell].get('IoU') > 0.5:
-                candidates[cell] = sum(score_dict[cell].values())
+                candidates[cell] = score_dict[cell]
         if not candidates:
             # print("第二分支，重新选择")
             for cell in score_dict:
                 if score_dict[cell].get('IoU') > 0.1:
-                    candidates[cell] = sum(score_dict[cell].values())
+                    candidates[cell] = score_dict[cell]
+        if not candidates:
+            # print("第二分支，重新选择")
+            for cell in score_dict:
+                if score_dict[cell].get('IoU') > 0.0:
+                    candidates[cell] = score_dict[cell]
+
         if not candidates:
             # print("第三分支，重新选择")
             for cell in score_dict:
                 candidates[cell] = sum(score_dict[cell].values())
-        best = max(candidates, key=candidates.get)
+            best = max(candidates, key=candidates.get)
+        else:
+            best = calc_weight(candidates)
         return best
 
     def match_one(self, predict_child, candidates):
@@ -732,7 +754,7 @@ class Matcher(object):
         """追踪单个细胞的变化情况"""
         cells = current_frame.cells
         parents = tree.last_layer_cell
-        m_counter = 10
+        m_counter = 5
         for parent in parents:
             # print(f'\nparent cell math status: {parent.is_be_matched}')
             m_counter -= 1
@@ -741,7 +763,7 @@ class Matcher(object):
                 tree.status.reset_M_count()
             if parent.phase == 'M':
                 tree.status.add_M_count()
-            if tree.status.predict_M_len >= 3:
+            if tree.status.predict_M_len >= 2:
                 tree.status.enter_mitosis(parent.frame - 2)
 
             # predict_child = self.predict_next_position(parent)
@@ -896,6 +918,7 @@ class Tracker(object):
         text = get_str()
         cv2.putText(im_rgb1, text, (bbox[3], bbox[1]), cv2.FONT_HERSHEY_COMPLEX,
                     0.75, (255, 255, 255), 2)
+
         return im_rgb1
 
     @staticmethod
@@ -1020,17 +1043,24 @@ class Tracker(object):
     def fe_cache(self, reset_flag):
         """缓存已经匹配过的帧，用来做check"""
 
-    def track(self, range=None):
+    def track(self, range=None, speed_filename=None):
         """顺序读取图像帧，开始追踪"""
         index = 0
+        speed_f = open(speed_filename, 'w', newline='')
+        writer = csv.writer(speed_f)
+        writer.writerow(['Iteration', 'Speed (it/s)'])
         for fe_before, fe_current, fe_next in tqdm(self.feature_ext, total=range, desc='tracking process'):
             # self.track_near_frame(fe_before, fe_current)
+            start_time = time.time()
             self.track_near_frame_mult_thread(fe_before, fe_current)
             self.check_track(fe_before, fe_current, fe_next)
+            end_time = time.time()
+            writer.writerow([index, f"{1/(end_time - start_time):.2f}"])
             if range:
                 index += 1
                 if index > range:
                     break
+        speed_f.close()
 
     def track_tree_to_json(self, filepath):
         if not os.path.exists(filepath):
@@ -1116,8 +1146,6 @@ class Tracker(object):
             for img, _ in tif:
                 if index >= xrange:
                     break
-                alpha = 1.5  # 对比度因子
-                beta = 50  # 亮度因子
                 img= adjust_gamma(img, gamma=1.5)
                 images_dict[index] = img
                 index += 1

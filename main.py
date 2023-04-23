@@ -1,3 +1,4 @@
+import json
 import os
 import argparse
 import sys
@@ -8,7 +9,7 @@ import tensorflow as tf
 
 sys.path.append('.')
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 if tf.config.list_physical_devices('GPU'):
     tf.config.experimental.set_memory_growth(tf.config.list_physical_devices("GPU")[0], enable=True)
@@ -88,16 +89,6 @@ elif args.ns and args.js:
 else:
     jsons = None
 
-if args.trackpcna:
-    from CCDeep.tracking_pcnadeep import track
-
-    if args.ot:
-        track_output = args.ot
-    else:
-        track_output = os.path.dirname(output)
-    logging.info(f"Tracking result will saved to {track_output}")
-    logging.info('start tracking ...')
-    track.start_track(fjson=jsons, fpcna=pcna, fbf=bf, fout=track_output)
 
 if args.track:
     # from CCDeep import tracking
@@ -119,3 +110,32 @@ if args.track:
         logging.info('start tracking ...')
         track.start_track(fjson=jsons, fpcna=args.pcna, fbf=None, fout=track_output, track_range=xrange,
                           export_visualization=True, basename=os.path.basename(args.pcna).replace('.tif', ''))
+
+
+if args.trackpcna:
+    from CCDeep.tracking_pcnadeep import track
+
+    if args.ot:
+        track_output = args.ot
+    else:
+        track_output = os.path.dirname(output)
+    if args.range is False:
+        xrange = None
+    else:
+        try:
+            xrange = int(args.range)
+        except ValueError:
+            logging.error(f'param <-r/--range >={args.range}, the value must be int!')
+            sys.exit(-1)
+    if xrange:
+        if type(jsons) is dict:
+            new_jsons = {key: jsons[key] for key in list(jsons)[:xrange]}
+        else:
+            with open(jsons) as f:
+                js = json.load(f)
+                new_jsons = {key: js[key] for key in list(js)[:xrange]}
+    else:
+        new_jsons = jsons
+    logging.info(f"Tracking result will saved to {track_output}")
+    logging.info('start tracking ...')
+    track.start_track(fjson=new_jsons, fpcna=pcna, fbf=bf, fout=track_output)
