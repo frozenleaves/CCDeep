@@ -199,9 +199,9 @@ def calc(SEG_mask_dir, GT_mask_dir, out_dir):
 
 
 def get_SEG_GT_mask():
-    json_file = r'G:\paper\evaluate_data\evaluation_for_segmentation\evaluate-GT.json'
+    json_file = r'G:\paper\evaluate_data\evaluation_for_segmentation\evaluate.json'
     tif_dir = r'G:\paper\evaluate_data\evaluation_for_segmentation\image'
-    out = r'G:\paper\evaluate_data\evaluation_for_segmentation\mask-GT'
+    out = r'G:\paper\evaluate_data\evaluation_for_segmentation\mask-CCDeep'
     json2mask(json_file, tif_dir, out)
 
 
@@ -218,8 +218,8 @@ if __name__ == '__main__':
     # calc(SEG_dir, GT_dir, out_dir)
 
     GT_dir = r'G:\paper\evaluate_data\evaluation_for_segmentation\mask-GT'
-    SEG_dir = r'G:\paper\evaluate_data\evaluation_for_segmentation\mask-cellpose'
-    out_dir = r'G:\paper\evaluate_data\evaluation_for_segmentation\measure\cellpose_segmentation'
+    SEG_dir = r'G:\paper\evaluate_data\evaluation_for_segmentation\mask-CCDeep'
+    out_dir = r'G:\paper\evaluate_data\evaluation_for_segmentation\measure\CCDeep_segmentation'
     calc(SEG_dir, GT_dir, out_dir)
 
     # SEG_CCDeep_dir = r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\mask\CCDeep'

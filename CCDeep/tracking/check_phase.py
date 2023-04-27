@@ -463,9 +463,10 @@ def track_trees_to_json(tracker: Tracker, output_fname, xrange, basename=None):
             frame = node.cell.frame
             update_region(node)
             region = node.cell.region
-            image_name = frame_map[frame]
-            tmp_frame = result[image_name]
-            tmp_frame['regions'].append(region)
+            image_name = frame_map.get(frame)
+            if image_name is not None:
+                tmp_frame = result.get(image_name)
+                tmp_frame['regions'].append(region)
     with open(output_fname, 'w') as f:
         json.dump(result, f)
 
@@ -477,6 +478,7 @@ def track_tree_to_MOT(tracker: Tracker, output_fname, xrange, basename=None):
         parser = parser_dict[tree]
         for node_index in parser.root_parent_list:
             cell_lineage = parser.lineage_dict.get(node_index)
+            pass
 
 
 def run(annotation, output_dir, basename, track_range=None, save_visualize=True, visualize_background_image=None,

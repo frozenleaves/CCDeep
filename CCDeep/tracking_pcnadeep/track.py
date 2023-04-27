@@ -116,6 +116,16 @@ def getDetectInput(pcna, dic, gamma=1, sat=1):
     print("Shape: ", final_out.shape)
     return final_out
 
+def ellipse_points(center, rx, ry, num_points=100, theta=0):
+    all_x = []
+    all_y = []
+    for i in range(num_points):
+        t = i * 2 * np.pi / num_points
+        x = center[0] + rx * np.cos(t) * np.cos(theta) - ry * np.sin(t) * np.sin(theta)
+        y = center[1] + rx * np.cos(t) * np.sin(theta) + ry * np.sin(t) * np.cos(theta)
+        all_x.append(x)
+        all_y.append(y)
+    return all_x, all_y
 
 def json2mask(ip, height, width, out=None, label_phase=False, mask_only=False):
     """Draw mask according to VIA2 annotation and summarize information
@@ -150,8 +160,22 @@ def json2mask(ip, height, width, out=None, label_phase=False, mask_only=False):
         objs = dic['regions']  # containing all object areas
         draw = ImageDraw.Draw(img)
         for o in objs:
-            x = o['shape_attributes']['all_points_x']
-            y = o['shape_attributes']['all_points_y']
+            try:
+                x = o['shape_attributes']['all_points_x']
+                y = o['shape_attributes']['all_points_y']
+            except KeyError:
+                # print(region)
+                if o['shape_attributes'].get('name') == 'ellipse':
+                    rx = o['shape_attributes'].get('rx')
+                    ry = o['shape_attributes'].get('ry')
+                    cx = o['shape_attributes'].get('cx')
+                    cy = o['shape_attributes'].get('cy')
+                    theta = o['shape_attributes'].get('theta')
+                    x, y = ellipse_points((cx, cy), rx, ry, num_points=32, theta=theta)
+                else:
+                    continue
+            # x = o['shape_attributes']['all_points_x']
+            # y = o['shape_attributes']['all_points_y']
             xys = [0 for _ in range(len(x) + len(y))]
             xys[::2] = x
             xys[1::2] = y
@@ -638,6 +662,7 @@ def start_track(fjson, fpcna, fbf, fout, image_width=2048, image_height=2048):
     # else:
     #     os.makedirs(result_save_path)
     try:
+
         table, mask = track_GT_json(fp_json=fjson, fp_pcna=fpcna, fp_bf=fbf, displace=60, gap_fill=5,
                                     sat=1, gamma=1, height=image_height, width=image_width)
         r = Refiner(track=table, mode='TRH', search_range=10, minM=1, maxBG=1, sample_freq=1 / 5,
@@ -653,6 +678,7 @@ def start_track(fjson, fpcna, fbf, fout, image_width=2048, image_height=2048):
         df1 = df1.rename(columns={"frame": "frame_index", "trackId": "cell_id", "parentTrackId": "parent_id",
                                   "Center_of_the_object_1": "center_y", "Center_of_the_object_0": "center_x",
                                   "resolved_class": "phase"})
+        df1.insert(1, 'track_id', df1['cell_id'])
         df1.to_csv(os.path.join(result_save_path, 'refined-pcnadeep(CCDeep_format).csv'), index=False)
         out[0].to_excel(os.path.join(result_save_path, 'refined-pcnadeep.xlsx'), index=False)
         out[1].to_csv(os.path.join(result_save_path, 'phase-pcnadeep.csv'), index=False)
@@ -661,6 +687,7 @@ def start_track(fjson, fpcna, fbf, fout, image_width=2048, image_height=2048):
         ret.to_csv(os.path.join(result_save_path, 'statistics-pcnadeep.csv'), index=False)
     except KeyError:
         pass
+
 
 
 if __name__ == '__main__':

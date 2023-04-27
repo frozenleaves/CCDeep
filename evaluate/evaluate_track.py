@@ -7,19 +7,27 @@ import motmetrics as mm
 
 # predict_file = r"G:\20x_dataset\evaluate_data\src06\trackmeta.csv"
 # predict_file = r"G:\20x_dataset\evaluate_data\src06\track\track.csv"
-predict_file = r"E:\paper\evaluate_data\src06\tracking_output\track.csv"
-ground_truth_file = r"E:\paper\evaluate_data\src06\track-GT.csv"
+# predict_file = r"E:\paper\evaluate_data\src06\tracking_output\track.csv"
+# ground_truth_file = r"E:\paper\evaluate_data\src06\track-GT.csv"
+#
+# # 从CSV文件中读取跟踪和真实轨迹
+# predict_df = pd.read_csv(predict_file)
+# truth_df = pd.read_csv(ground_truth_file)
+#
+# predict_df = predict_df.sort_values(by=['track_id', 'cell_id', 'frame_index'])
+#
+# truth_df = truth_df.sort_values(by=['track_id', 'cell_id', 'frame_index'])
 
-# 从CSV文件中读取跟踪和真实轨迹
-predict_df = pd.read_csv(predict_file)
-truth_df = pd.read_csv(ground_truth_file)
 
-predict_df = predict_df.sort_values(by=['track_id', 'cell_id', 'frame_index'])
+def prepare_data(predict_file_path, ground_truth_file_path):
+    predict_df = pd.read_csv(predict_file_path)
+    truth_df = pd.read_csv(ground_truth_file_path)
+    predict_df = predict_df.sort_values(by=['track_id', 'cell_id', 'frame_index'])
+    truth_df = truth_df.sort_values(by=['track_id', 'cell_id', 'frame_index'])
+    return truth_df, predict_df
 
-truth_df = truth_df.sort_values(by=['track_id', 'cell_id', 'frame_index'])
 
-
-def evaluate(truth_df, predict_df):
+def evaluate(truth_df, predict_df, outfile):
     # Create an accumulator that will be used to accumulate errors.
     # It accepts two arguments: the list of metric names to compute, and whether the metrics are "single object" metrics
     # (meaning they're computed on a per-object basis, like tracking accuracy or recall), or "tracking metrics" (which consider
@@ -76,13 +84,15 @@ def evaluate(truth_df, predict_df):
                  'num_fragmentations': 'FM', 'mota': 'MOTA', 'motp': 'MOTP',
                  }
     )
-    print(strsummary)
-
-    # Print the summary of metrics
-    print(summary)
-    print(type(summary))
     print(mm.io.render_summary(summary, formatters=metrics.formatters, namemap=mm.io.motchallenge_metric_names))
-    # summary.to_csv(r'G:\20x_dataset\evaluate_data\split-copy19\group0\track_evaluate.csv')
+    summary.to_csv(outfile)
 
 
-evaluate(truth_df, predict_df)
+if __name__ == '__main__':
+    gap = 4
+    pred = rf'E:\paper\evaluate_data\{gap*5}min\src06_{gap*5}min\tracking_output\(new)track.csv'
+    pred2 = rf'E:\paper\evaluate_data\{gap*5}min\src06_{gap*5}min\track\refined-pcnadeep(CCDeep_format).csv'
+    gt = rf'E:\paper\evaluate_data\{gap*5}min\src06_{gap*5}min\{gap*5}-track-GT.csv'
+    out = rf'E:\paper\evaluate_data\{gap*5}min\src06_{gap*5}min\evaluate-track.csv'
+    evaluate(*prepare_data(pred, gt), outfile=out)
+    evaluate(*prepare_data(pred2, gt), outfile=out)

@@ -454,7 +454,13 @@ class Matcher(object):
         :param cells: 候选匹配项
         :return: 筛选过的候选匹配项
         """
-        return [cell for cell in cells if cell in child]
+        # filtered_candidates = [cell for cell in cells if cell in child]
+        filtered_candidates = []
+        for cell in cells:
+            if cell in child and cell.is_accurate_matched is False:
+                filtered_candidates.append(cell)
+
+        return filtered_candidates
 
     def match_candidates(self, child: Cell, before_cell_list: List[Cell]):
         """匹配候选项"""
@@ -783,6 +789,9 @@ class Matcher(object):
                     current_frame.add_cell(child_cells[0][0])
                     child_node = CellNode(child_cells[0][0])
                     child_node.life -= 1
+                elif child_cells[0][1] == ('ACCURATE' or 'ACCURATE-FL'):
+                    child_cells[0][0].is_accurate_matched = True
+                    child_node = CellNode(child_cells[0][0])
                 else:
                     child_node = CellNode(child_cells[0][0])
                 # child_node.set_branch_id(parent_node.get_branch_id())
@@ -1150,9 +1159,12 @@ class Tracker(object):
                 images_dict[index] = img
                 index += 1
         else:
-            for img, _ in tif:
-                images_dict[index] = img
-                index += 1
+            try:
+                for img, _ in tif:
+                    images_dict[index] = img
+                    index += 1
+            except KeyError:
+                pass
         for i in tree_list:
             for node in i.expand_tree():
                 frame = i.nodes.get(node).cell.frame

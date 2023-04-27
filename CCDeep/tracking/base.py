@@ -383,6 +383,7 @@ class Cell(object):
             cls._instances[key].mitosis_start_flag = False
             cls._instances[key].__region = None
             cls._instances[key].__status = None
+            cls._instances[key].__is_accurate_matched = False
             cls._instances[key].__match_status = False  # 匹配状态，如果参与匹配则设置为匹配状态，从未匹配则设置为False
         return cls._instances[key]
 
@@ -472,6 +473,14 @@ class Cell(object):
     @property
     def status(self):
         return self.__status
+
+    @property
+    def is_accurate_matched(self):
+        return self.__is_accurate_matched
+
+    @is_accurate_matched.setter
+    def is_accurate_matched(self, value: bool):
+        self.__is_accurate_matched = value
 
     @property
     def region(self):
