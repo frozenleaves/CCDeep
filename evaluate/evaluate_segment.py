@@ -139,7 +139,7 @@ def c_calc_single_frame(SEG_mask, GT_mask):
 
 def Exec_EvaluateSegmentation(SEG_mask, GT_mask):
     # main = fr"H:\software\EvaluateSegmentation-2017.04.25-win-xp-and-later\EvaluateSegmentation.exe"
-    cmd = fr'G:\CCDeep\CCDeep-data\software\EvaluateSegmentation-2017.04.25-win-xp-and-later\EvaluateSegmentation.exe {GT_mask} {SEG_mask}'
+    cmd = fr'I:\CCDeep\CCDeep-data\software\EvaluateSegmentation-2017.04.25-win-xp-and-later\EvaluateSegmentation.exe {GT_mask} {SEG_mask}'
     print(GT_mask)
     print(SEG_mask)
     out = subprocess.getoutput(cmd)
@@ -199,9 +199,9 @@ def calc(SEG_mask_dir, GT_mask_dir, out_dir):
 
 
 def get_SEG_GT_mask():
-    json_file = r'G:\paper\evaluate_data\evaluation_for_segmentation\evaluate.json'
-    tif_dir = r'G:\paper\evaluate_data\evaluation_for_segmentation\image'
-    out = r'G:\paper\evaluate_data\evaluation_for_segmentation\mask-CCDeep'
+    json_file = r'I:\paper\evaluate_data\evaluation_for_segmentation\evaluate.json'
+    tif_dir = r'I:\paper\evaluate_data\evaluation_for_segmentation\image'
+    out = r'I:\paper\evaluate_data\evaluation_for_segmentation\mask-CCDeep'
     json2mask(json_file, tif_dir, out)
 
 
@@ -217,9 +217,9 @@ if __name__ == '__main__':
     # out_dir = r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\measure\deepcell_segmentation'
     # calc(SEG_dir, GT_dir, out_dir)
 
-    GT_dir = r'G:\paper\evaluate_data\evaluation_for_segmentation\mask-GT'
-    SEG_dir = r'G:\paper\evaluate_data\evaluation_for_segmentation\mask-CCDeep'
-    out_dir = r'G:\paper\evaluate_data\evaluation_for_segmentation\measure\CCDeep_segmentation'
+    GT_dir = r'I:\paper\evaluate_data\evaluation_for_segmentation\mask-GT'
+    SEG_dir = r'I:\paper\evaluate_data\evaluation_for_segmentation\mask-cellpose'
+    out_dir = r'I:\paper\evaluate_data\evaluation_for_segmentation\measure\cellpose_segmentation'
     calc(SEG_dir, GT_dir, out_dir)
 
     # SEG_CCDeep_dir = r'G:\20x_dataset\evaluate_data\copy_of_1_xy19\mask\CCDeep'

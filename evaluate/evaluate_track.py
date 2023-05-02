@@ -22,7 +22,10 @@ import motmetrics as mm
 def prepare_data(predict_file_path, ground_truth_file_path):
     predict_df = pd.read_csv(predict_file_path)
     truth_df = pd.read_csv(ground_truth_file_path)
-    predict_df = predict_df.sort_values(by=['track_id', 'cell_id', 'frame_index'])
+    try:
+        predict_df = predict_df.sort_values(by=['track_id', 'cell_id', 'frame_index'])
+    except KeyError:
+        predict_df = predict_df.sort_values(by=['cell_id', 'frame_index'])
     truth_df = truth_df.sort_values(by=['track_id', 'cell_id', 'frame_index'])
     return truth_df, predict_df
 
@@ -62,8 +65,10 @@ def evaluate(truth_df, predict_df, outfile):
         hids = dt_group['cell_id'].values
         dists = mm.distances.norm2squared_matrix(gt_group[['center_x', 'center_y']].values,
                                                  dt_group[['center_x', 'center_y']].values)
-
-        acc.update(oids, hids, dists, frameid=i)
+        try:
+            acc.update(oids, hids, dists, frameid=i)
+        except KeyError:
+            continue
 
     # Compute metrics on the accumulated errors.
     # The compute_metrics() function returns a dictionary with the computed metrics.
@@ -89,10 +94,15 @@ def evaluate(truth_df, predict_df, outfile):
 
 
 if __name__ == '__main__':
-    gap = 4
-    pred = rf'E:\paper\evaluate_data\{gap*5}min\src06_{gap*5}min\tracking_output\(new)track.csv'
-    pred2 = rf'E:\paper\evaluate_data\{gap*5}min\src06_{gap*5}min\track\refined-pcnadeep(CCDeep_format).csv'
-    gt = rf'E:\paper\evaluate_data\{gap*5}min\src06_{gap*5}min\{gap*5}-track-GT.csv'
-    out = rf'E:\paper\evaluate_data\{gap*5}min\src06_{gap*5}min\evaluate-track.csv'
+    gap = 6
+    pred = rf'E:\paper\evaluate_data\{gap*5}min\copy_of_1_xy01_{gap*5}min\tracking_output\(new)track.csv'
+    pred2 = rf'E:\paper\evaluate_data\{gap*5}min\copy_of_1_xy01_{gap*5}min\track\refined-pcnadeep(CCDeep_format).csv'
+    gt = rf'E:\paper\evaluate_data\{gap*5}min\copy_of_1_xy01_{gap*5}min\{gap*5}-track-GT.csv'
+    out = rf'E:\paper\evaluate_data\{gap*5}min\copy_of_1_xy01_{gap*5}min\evaluate-track.csv'
     evaluate(*prepare_data(pred, gt), outfile=out)
     evaluate(*prepare_data(pred2, gt), outfile=out)
+
+    # evaluate(*prepare_data(r'E:\paper\evaluate_data\copy_of_1_xy01\tracking_output\track.csv',
+    #                        r'E:\paper\evaluate_data\copy_of_1_xy01\track-GT.csv'), outfile=r'E:\paper\evaluate_data\copy_of_1_xy01\evaluate.csv')
+
+

@@ -482,7 +482,8 @@ class Matcher(object):
     def match_similar(self, cell_1: Cell, cell_2: Cell):
         similar = {'IoU': self.matcher.calcIoU(cell_1, cell_2),
                    'shape': self.matcher.compareShapeSimilar(cell_1, cell_2),
-                   'area': self.matcher.calcAreaSimilar(cell_1, cell_2)
+                   'area': self.matcher.calcAreaSimilar(cell_1, cell_2),
+                   'distance': self.matcher.calcEuclideanDistance(cell_1, cell_2)
                    }
         return similar
 
@@ -599,12 +600,46 @@ class Matcher(object):
 
         def calc_weight(candidate_score_dict):
             result = {}
-            for cell in candidate_score_dict:
-                score_dict = candidate_score_dict[cell]
-                value =  score_dict['IoU'] * self.WEIGHT.get('IoU') + \
-                       score_dict['shape'] * self.WEIGHT.get('shape') + score_dict['area'] * self.WEIGHT.get('area')
-                result[cell] = value
-            return max(result, key=result.get)
+            # for cell in candidate_score_dict:
+            #     score_dict = candidate_score_dict[cell]
+                # value =  score_dict['IoU'] * self.WEIGHT.get('IoU') + \
+                #        score_dict['shape'] * self.WEIGHT.get('shape') + score_dict['area'] * self.WEIGHT.get('area')
+            selected_cell = None
+            max_iou = 0.0
+            max_distance = 0.0
+            threshold = 0.2
+            iou_above_threshold = False
+
+            # 遍历match字典中的每个cell和score_dict
+            for cell, score_dict in candidate_score_dict.items():
+                iou = score_dict['IoU']
+                distance = score_dict['distance']
+
+                # 如果iou大于阈值，更新最大iou和选取的cell，并将iou_above_threshold设置为True
+                if iou > threshold:
+                    iou_above_threshold = True
+                    if distance > max_distance:
+                        selected_cell = cell
+                        max_distance = distance
+                        max_iou = iou
+                # 如果iou不大于阈值，但是大于当前最大iou，则更新最大iou和选取的cell
+                elif iou > max_iou:
+                    selected_cell = cell
+                    max_iou = iou
+                    max_distance = distance
+
+            # 如果没有任何一个score_dict的iou大于阈值，则选取iou值最大的那个cell
+            if not iou_above_threshold:
+                for cell, score_dict in candidate_score_dict.items():
+                    iou = score_dict['IoU']
+                    if iou > max_iou:
+                        selected_cell = cell
+                        max_iou = iou
+                        max_distance = score_dict['distance']
+
+            # 返回选取的cell
+            return selected_cell
+            # return max(result, key=result.get)
 
         candidates = {}
         for cell in score_dict:
@@ -691,22 +726,21 @@ class Matcher(object):
                         return {'matched_cell': matched_result, 'status': cell_track_status}
             else:
                 return {'matched_cell': self.match_one(predict_child, filtered_candidates), 'status': cell_track_status}
-        else:
-            # 此处视为没有匹配项，填充预测细胞，
-            if predict_child.phase.startswith('predict'):
-                predict_child_phase = predict_child.phase
-            else:
-                predict_child_phase = 'predict_' + predict_child.phase
-            predict_child_cell = Cell(position=predict_child.position, mcy=predict_child.mcy, dic=predict_child.dic,
-                                      phase=predict_child_phase, frame_index=predict_child.frame + 1,
-                                      flag='gap')
-            predict_child_cell.set_feature(predict_child.feature)
-            predict_child_cell.set_region(predict_child.region)
-            # no_filter_candidates.add_cell(predict_child_cell)
-            return {'matched_cell': [(predict_child_cell, 'PREDICTED')], 'status': cell_track_status}
+        # else:
+        #     # 此处视为没有匹配项，填充预测细胞，
+        #     if predict_child.phase.startswith('predict'):
+        #         predict_child_phase = predict_child.phase
+        #     else:
+        #         predict_child_phase = 'predict_' + predict_child.phase
+        #     predict_child_cell = Cell(position=predict_child.position, mcy=predict_child.mcy, dic=predict_child.dic,
+        #                               phase=predict_child_phase, frame_index=predict_child.frame + 1,
+        #                               flag='gap')
+        #     predict_child_cell.set_feature(predict_child.feature)
+        #     predict_child_cell.set_region(predict_child.region)
+        #     # no_filter_candidates.add_cell(predict_child_cell)
+        #     return {'matched_cell': [(predict_child_cell, 'PREDICTED')], 'status': cell_track_status}
 
-        #
-        #
+
         # elif len(filtered_candidates) > 1:  # 有多个匹配项
         #     matched_result = []
         #     score_dict = {}
@@ -765,7 +799,7 @@ class Matcher(object):
             # print(f'\nparent cell math status: {parent.is_be_matched}')
             m_counter -= 1
             if not m_counter:
-                m_counter = 10
+                m_counter = 5
                 tree.status.reset_M_count()
             if parent.phase == 'M':
                 tree.status.add_M_count()
@@ -782,8 +816,11 @@ class Matcher(object):
                     # if self.is_mitosis_start(predict_child, filtered_candidates):
                     tree.status.enter_mitosis(parent.frame)
             match_result = self._match(predict_child, filtered_candidates, tree.status)
-            child_cells = match_result.get('matched_cell')
-            parent_node = CellNode(parent)
+            if match_result is not None:
+                child_cells = match_result.get('matched_cell')
+                parent_node = CellNode(parent)
+            else:
+                continue
             if len(child_cells) == 1:
                 if child_cells[0][1] == 'PREDICTED':
                     current_frame.add_cell(child_cells[0][0])
@@ -794,6 +831,7 @@ class Matcher(object):
                     child_node = CellNode(child_cells[0][0])
                 else:
                     child_node = CellNode(child_cells[0][0])
+                    # child_cells[0][0].is_accurate_matched = True
                 # child_node.set_branch_id(parent_node.get_branch_id())
                 child_node.cell.set_branch_id(parent_node.cell.branch_id)
                 child_node.cell.set_status(tree.status)
@@ -1172,10 +1210,11 @@ class Tracker(object):
                     if frame > xrange:
                         continue
                 # bbox = i.nodes.get(node).cell.bbox
-                img_bg = images_dict[frame]
-                images_dict[frame] = self.draw_bbox(img_bg, i.nodes.get(node).cell, i.track_id,
-                                                    i.get_node(node).cell.branch_id,
-                                                    phase=i.get_node(node).cell.phase)
+                img_bg = images_dict.get(frame)
+                if img_bg is not None:
+                    images_dict[frame] = self.draw_bbox(img_bg, i.nodes.get(node).cell, i.track_id,
+                                                        i.get_node(node).cell.branch_id,
+                                                        phase=i.get_node(node).cell.phase)
         if not single:
             if not (os.path.exists(output_tif_path) and os.path.isdir(output_tif_path)):
                 os.mkdir(output_tif_path)
