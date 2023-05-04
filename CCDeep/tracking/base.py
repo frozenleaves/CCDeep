@@ -67,12 +67,12 @@ class TreeStatus(object):
             cls._instances[key] = super().__new__(cls)
             cls._instances[key].__tracking_tree = None
             cls._instances[key].__init_flag = False
-            cls._instances[key].enter_mitosis_threshold = 10
+            cls._instances[key].enter_mitosis_threshold = 50
             cls._instances[key].__exit_mitosis_time = cls._instances[key].enter_mitosis_threshold
             # 从完成分裂退出mitosis开始，计数，10帧之内不可以再进入mitosis，即当此值小于10的时候，self.__enter_mitosis 不可为True
         return cls._instances[key]
 
-    def __init__(self, tree: 'TrackingTree'):
+    def __init__(self, tree: 'TrackingTree | None'):
         if not self.__init_flag:
             self.__tracking_tree = tree
             self.__enter_mitosis: bool = False
@@ -135,11 +135,20 @@ class TreeStatus(object):
     def is_mitosis_enter(self):
         return self.__enter_mitosis
 
+    @property
+    def exist_mitosis_time(self):
+        return self.__exit_mitosis_time
+
     def __str__(self):
         return str(self.status)
 
     def __repr__(self):
         return self.__str__()
+
+class CellStatus(TreeStatus):
+    """记录细胞的状态，如果细胞参与过精确匹配，则将其排除在其他匹配候选项之外。
+    如果细胞短时间内发生过有丝分裂，则不参与有丝分裂匹配"""
+    pass
 
 
 class SingleInstance(object):
@@ -467,7 +476,7 @@ class Cell(object):
     def set_region(self, region):
         self.__region = region
 
-    def set_status(self, status: TreeStatus):
+    def set_status(self, status: TreeStatus | CellStatus):
         self.__status = status
 
     @property
@@ -540,6 +549,10 @@ class Cell(object):
     def is_be_matched(self):
         """如果参与过匹配，则返回match status， 否则，为False"""
         return self.__match_status
+
+    @is_be_matched.setter
+    def is_be_matched(self, value):
+        self.__match_status = value
 
     def set_parent_id(self, __parent_id):
         self.__parent = __parent_id

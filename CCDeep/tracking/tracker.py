@@ -14,6 +14,7 @@ import csv
 import os
 import sys
 import time
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 
 from libtiff import TIFF
@@ -42,7 +43,7 @@ from treelib import Tree, Node
 from tqdm import tqdm
 
 from CCDeep.utils import convert_dtype, readTif
-from CCDeep.tracking.base import Cell, Rectangle, Vector, SingleInstance, CacheData, MatchStatus, TreeStatus
+from CCDeep.tracking.base import Cell, Rectangle, Vector, SingleInstance, CacheData, MatchStatus, TreeStatus, CellStatus
 from CCDeep.tracking.t_error import InsertError, MitosisError, NodeExistError, ErrorMatchMitosis, StatusError
 from CCDeep.tracking.feature import FeatureExtractor, feature_extract
 
@@ -382,7 +383,8 @@ class Match(object):
         返回值为归一化[0, π/2]之后的余弦值，返回值越小，表示相似度越低
         """
         dist = cell_1.vector.EuclideanDistance(cell_2.vector)
-        return np.cos(np.arctan(dist) / (np.pi / 2))
+        # return np.cos(np.arctan(dist) / (np.pi / 2))
+        return dist
 
     def compareDicSimilar(self, cell_1: Cell, cell_2: Cell):
         """
@@ -489,16 +491,19 @@ class Matcher(object):
 
     def match_duplicate_child(self, parent, unmatched_child_list):
         """
-        一旦调用这个函数，意味着候选项中不止一个，此方法计算每个候选项的匹配度
+        调用这个函数，意味着候选项中不止一个，此方法计算每个候选项的匹配度
         返回值为{Cell: similar_dict}形式的字典
         """
         matched = {}
         for i in unmatched_child_list:
+            # if i.is_be_matched :
+            #     if i.status.exist_mitosis_time < 50:
+            #         continue
             similar = self.match_similar(parent, i)
             matched[i] = similar
         return matched
 
-    def is_mitosis_start(self, pre_parent: Cell, last_leaves: List[Cell], area_size_t=1.6, iou_t=0.5):
+    def is_mitosis_start(self, pre_parent: Cell, last_leaves: List[Cell], area_size_t=1.8, iou_t=0.5):
         """判断细胞是否进入M期，核心依据是细胞进入Mitosis的时候，体积会变大
         :returns 如果成功进入M期，返回包含最后一帧的G2和第一帧M的字典信息， 否则，返回False
         """
@@ -558,7 +563,14 @@ class Matcher(object):
         """
 
         matched_candidates = self.match_duplicate_child(parent, candidates_child_list)
-        matched_cells_dict = self.check_iou(matched_candidates)
+        checked_candidates = {}
+        for i in matched_candidates:
+            if i.is_be_matched :
+                if i.status.exist_mitosis_time < 50:
+                    continue
+            checked_candidates[i] = matched_candidates[i]
+        matched_cells_dict = self.check_iou(checked_candidates)
+        # matched_cells_dict = self.check_iou(matched_candidates)
         if not matched_cells_dict:
             raise MitosisError('not enough candidates')
         else:
@@ -569,9 +581,10 @@ class Matcher(object):
                     raise MitosisError('The cell is too small to have cell division !')
                 # if self.matcher.calcAreaSimilar(cells[0], cells[1]) > area_t and self.matcher.compareShapeSimilar(
                 #         cells[0], cells[1]) < shape_t:
-                if self.matcher.calcAreaSimilar(cells[0], cells[1]) > area_t:
+                if self.matcher.calcAreaSimilar(cells[0], cells[1]) > area_t :
                     return cells, 'ACCURATE'
                 else:
+                    # raise MitosisError("not enough candidates, after matched.")
                     return cells, 'INACCURATE'
             else:
                 # max_two = heapq.nlargest(2, [sum(sm) for sm in matched_cells_dict.values()])  # 找到匹配结果中最大的两个值
@@ -606,8 +619,8 @@ class Matcher(object):
                 #        score_dict['shape'] * self.WEIGHT.get('shape') + score_dict['area'] * self.WEIGHT.get('area')
             selected_cell = None
             max_iou = 0.0
-            max_distance = 0.0
-            threshold = 0.2
+            min_distance = 100
+            threshold = 0.5
             iou_above_threshold = False
 
             # 遍历match字典中的每个cell和score_dict
@@ -618,15 +631,15 @@ class Matcher(object):
                 # 如果iou大于阈值，更新最大iou和选取的cell，并将iou_above_threshold设置为True
                 if iou > threshold:
                     iou_above_threshold = True
-                    if distance > max_distance:
+                    if distance < min_distance:
                         selected_cell = cell
-                        max_distance = distance
+                        min_distance = distance
                         max_iou = iou
                 # 如果iou不大于阈值，但是大于当前最大iou，则更新最大iou和选取的cell
                 elif iou > max_iou:
                     selected_cell = cell
                     max_iou = iou
-                    max_distance = distance
+                    min_distance = distance
 
             # 如果没有任何一个score_dict的iou大于阈值，则选取iou值最大的那个cell
             if not iou_above_threshold:
@@ -635,8 +648,6 @@ class Matcher(object):
                     if iou > max_iou:
                         selected_cell = cell
                         max_iou = iou
-                        max_distance = score_dict['distance']
-
             # 返回选取的cell
             return selected_cell
             # return max(result, key=result.get)
@@ -660,7 +671,10 @@ class Matcher(object):
             # print("第三分支，重新选择")
             for cell in score_dict:
                 candidates[cell] = sum(score_dict[cell].values())
-            best = max(candidates, key=candidates.get)
+            try:
+                best = max(candidates, key=candidates.get)
+            except ValueError:
+                print(score_dict)
         else:
             best = calc_weight(candidates)
         return best
@@ -690,7 +704,6 @@ class Matcher(object):
 
     def _match(self, parent: Cell, filter_candidates_cells: List[Cell], cell_track_status: TreeStatus):
         """比较两个细胞的综合相似度
-        is_new: 是否为新出现在视野中的细胞
         """
         # predict_child = self.predict_next_position(parent)
         predict_child = parent
@@ -702,7 +715,7 @@ class Matcher(object):
                 matched_candidates = self.match_duplicate_child(predict_child, filtered_candidates)
                 if not cell_track_status.status.get('enter_mitosis'):
                     # if parent.phase != 'M':
-                    return {'matched_cell': [(self.select_single_child(matched_candidates), 'ACCURATE')],
+                    return {'matched_cell': [(self.select_single_child(matched_candidates), 'INACCURATE')],
                             'status': cell_track_status}
                 # elif not self.check_iou(matched_candidates):
                 #     return {'matched_cell': [(self.select_single_child(matched_candidates), 'ACCURATE')],
@@ -710,7 +723,7 @@ class Matcher(object):
                 else:
                     matched_result = []
                     try:
-                        sisters, status = self.select_mitosis_cells(predict_child, filtered_candidates)  # 此时细胞一分为二
+                        sisters, status = self.select_mitosis_cells(parent, filtered_candidates)  # 此时细胞一分为二
                         cell_track_status.exit_mitosis(parent.frame + 1)
                         for sister in sisters:
                             matched_result.append((sister, status))
@@ -822,11 +835,11 @@ class Matcher(object):
             else:
                 continue
             if len(child_cells) == 1:
-                if child_cells[0][1] == 'PREDICTED':
-                    current_frame.add_cell(child_cells[0][0])
-                    child_node = CellNode(child_cells[0][0])
-                    child_node.life -= 1
-                elif child_cells[0][1] == ('ACCURATE' or 'ACCURATE-FL'):
+                # if child_cells[0][1] == 'PREDICTED':
+                #     current_frame.add_cell(child_cells[0][0])
+                #     child_node = CellNode(child_cells[0][0])
+                #     child_node.life -= 1
+                if child_cells[0][1] == ('ACCURATE' or 'ACCURATE-FL'):
                     child_cells[0][0].is_accurate_matched = True
                     child_node = CellNode(child_cells[0][0])
                 else:
@@ -838,23 +851,25 @@ class Matcher(object):
                 child_node.cell.update_region(track_id=tree.track_id)
                 child_node.cell.update_region(branch_id=parent_node.cell.branch_id)
                 child_node.cell.set_match_status(child_cells[0][1])
-                if child_node.life > 0:
-                    self.add_child_node(tree, child_node, parent_node)
+                # if child_node.life > 0:
+                self.add_child_node(tree, child_node, parent_node)
                 # child_node.branch_id = parent_node.branch_id
             else:
-                try:
-                    assert len(child_cells) == 2
-                except AssertionError:
-                    # self._match(predict_child, filtered_candidates, tree.status)
-                    continue
+            #     try:
+            #         assert len(child_cells) == 2
+            #     except AssertionError:
+            #         # self._match(predict_child, filtered_candidates, tree.status)
+            #         continue
 
                 for cell in child_cells:
                     new_branch_id = tree.branch_id_distributor()
                     cell[0].set_branch_id(new_branch_id)
                     cell[0].update_region(track_id=tree.track_id)
                     cell[0].update_region(branch_id=new_branch_id)
-                    cell[0].set_match_status(True)
+                    cell[0].set_match_status(cell[1])
                     child_node = CellNode(cell[0])
+                    if cell[1] == ('ACCURATE' or 'ACCURATE-FL'):
+                        cell[0].is_accurate_matched = True
                     self.add_child_node(tree, child_node, parent_node)
         tree.status.add_exist_time()
 
@@ -894,6 +909,7 @@ class Tracker(object):
 
     def __init__(self, annotation, mcy=None, dic=None):
         self.matcher = Matcher()
+        self.fe_cache = deque(maxlen=5)
         self.trees: TrackingTree
         self.mcy = mcy
         self.dic = dic
@@ -904,10 +920,10 @@ class Tracker(object):
         self.feature_ext = feature_extract(mcy=self.mcy, dic=self.dic, jsonfile=self.annotation)
         self.tree_maps = {}
         self.init_tracking_tree(next(self.feature_ext)[0])
-
         self.nodes = set()
         self.count = 0
         self.parser_dict = None
+
 
     def id_distributor(self):
         if self._available_id not in self._exist_tree_id:
@@ -937,11 +953,15 @@ class Tracker(object):
             node.set_branch_id(0)
             node.set_track_id(tree.track_id)
             node.status = 'ACCURATE'
+            i.set_match_status('ACCURATE')
+            i.is_accurate_matched = True
+            node.cell.set_status(TreeStatus(tree))
             tree.add_node(node)
             trees.append(tree)
             self.tree_maps[i] = tree
         self.init_flag = True
         self.trees = trees
+        self.fe_cache.append(fe)
 
     def draw_bbox(self, bg1, cell: Cell, track_id, branch_id=None, phase=None):
         bbox = cell.bbox
@@ -993,6 +1013,7 @@ class Tracker(object):
         if child_node not in tree:
             # tree.add_node(child_node, parent=parent_node.identifier)
             tree.add_node(child_node, parent=parent_node)
+            child_node.cell.set_status(CellStatus(tree))
         else:
             raise NodeExistError(child_node)
 
@@ -1059,6 +1080,44 @@ class Tracker(object):
             except NodeExistError:
                 pass
 
+    def calc_weight(self, candidate_score_dict):
+        result = {}
+        # for cell in candidate_score_dict:
+        #     score_dict = candidate_score_dict[cell]
+        # value =  score_dict['IoU'] * self.WEIGHT.get('IoU') + \
+        #        score_dict['shape'] * self.WEIGHT.get('shape') + score_dict['area'] * self.WEIGHT.get('area')
+        selected_cell = None
+        max_iou = 0.0
+        min_distance = 100
+        threshold = 0.5
+        iou_above_threshold = False
+        # 遍历match字典中的每个cell和score_dict
+        for cell, score_dict in candidate_score_dict.items():
+            iou = score_dict['IoU']
+            distance = score_dict['distance']
+            # 如果iou大于阈值，更新最大iou和选取的cell，并将iou_above_threshold设置为True
+            if iou > threshold:
+                iou_above_threshold = True
+                if distance < min_distance:
+                    selected_cell = cell
+                    min_distance = distance
+                    max_iou = iou
+            # 如果iou不大于阈值，但是大于当前最大iou，则更新最大iou和选取的cell
+            elif iou > max_iou:
+                selected_cell = cell
+                max_iou = iou
+                min_distance = distance
+        # 如果没有任何一个score_dict的iou大于阈值，则选取iou值最大的那个cell
+        if not iou_above_threshold:
+            for cell, score_dict in candidate_score_dict.items():
+                iou = score_dict['IoU']
+                if iou > max_iou:
+                    selected_cell = cell
+                    max_iou = iou
+        # 返回选取的cell
+        return selected_cell
+        # return max(result, key=result.get)
+
     def check_track(self, fe1: FeatureExtractor, fe2: FeatureExtractor, fe3: FeatureExtractor):
         """检查track结果，查看是否有错误匹配和遗漏， 同时更新匹配状态"""
         for cell in fe2.cells:
@@ -1069,26 +1128,48 @@ class Tracker(object):
                 err_parent, err_tree = err_match_dict.popitem()
                 # self.rematch(err_parent, err_tree, cell, fe2)
         for cell in fe1.cells:
+            handle_flag = False
             if cell.is_be_matched is False:
-                # print(cell)
-                tree = TrackingTree(track_id=self.id_distributor())
-                cell.set_track_id(tree.track_id, 1)
-                cell.set_branch_id(0)
-                cell.set_cell_id(str(cell.track_id) + '-' + str(cell.branch_id))
-                cell.update_region(track_id=tree.track_id)
-                cell.update_region(branch_id=0)
-                node = CellNode(cell)
-                node.set_branch_id(0)
-                node.set_track_id(tree.track_id)
-                node.status = 'ACCURATE'
-                tree.add_node(node)
-                self.trees.append(tree)
-                self.tree_maps[cell] = tree
-                cell.set_match_status('INACCURATE')
-                self.matcher.match_single_cell(tree, fe2)
-
-    def fe_cache(self, reset_flag):
-        """缓存已经匹配过的帧，用来做check"""
+                last_fe = self.fe_cache[-1]
+                candidate = [cell for cell in last_fe.cells]
+                if candidate:
+                    rematch = {}
+                    for may_parent in candidate:
+                        match_result = self.matcher.match_similar(may_parent, cell)
+                        if match_result['IoU'] > 0.4:
+                            rematch[may_parent] = match_result
+                    if rematch:
+                        result = max(rematch, key=lambda k: rematch[k]['IoU'] + (1/rematch[k]['distance']))
+                        # result = self.calc_weight(rematch)
+                        if result.is_be_matched == 'INACCURATE':
+                            current_trees = self.get_current_tree(result)
+                            print('len tree:   ',len(current_trees))
+                            for t in current_trees:
+                                print(t.leaves())
+                                t.add_node(CellNode(cell), parent=CellNode(result))
+                                cell.set_match_status('ACCURATE')
+                                cell.is_accurate_matched = True
+                                cell.set_status(t.status)
+                                self.matcher.match_single_cell(t, fe2)
+                                handle_flag = True
+                if not handle_flag:
+                    tree = TrackingTree(track_id=self.id_distributor())
+                    cell.set_track_id(tree.track_id, 1)
+                    cell.set_branch_id(0)
+                    cell.set_cell_id(str(cell.track_id) + '-' + str(cell.branch_id))
+                    cell.update_region(track_id=tree.track_id)
+                    cell.update_region(branch_id=0)
+                    node = CellNode(cell)
+                    node.set_branch_id(0)
+                    node.set_track_id(tree.track_id)
+                    node.status = 'ACCURATE'
+                    tree.add_node(node)
+                    self.trees.append(tree)
+                    self.tree_maps[cell] = tree
+                    cell.set_match_status('ACCURATE')
+                    cell.set_status(CellStatus(tree))
+                    cell.is_accurate_matched = True
+                    self.matcher.match_single_cell(tree, fe2)
 
     def track(self, range=None, speed_filename=None):
         """顺序读取图像帧，开始追踪"""
@@ -1101,6 +1182,12 @@ class Tracker(object):
             start_time = time.time()
             self.track_near_frame_mult_thread(fe_before, fe_current)
             self.check_track(fe_before, fe_current, fe_next)
+
+            self.fe_cache.append(fe_before)
+            # # 检查缓存队列长度是否超过 5，如果超过了，就从左侧弹出最旧的 fe 对象
+            # if len(self.fe_cache) > 5:
+            #     oldest_fe_object = self.fe_cache.popleft()
+
             end_time = time.time()
             writer.writerow([index, f"{1/(end_time - start_time):.2f}"])
             if range:

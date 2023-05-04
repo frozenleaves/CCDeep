@@ -349,8 +349,11 @@ def run_track(annotation, track_range=None, dic=None, mcy=None, speed_filename=N
         tracker.track()
     parser_dict = {}
     for tree in tracker.trees:
-        parser = pares_single_tree(tree)
-        parser_dict[tree] = parser
+        try:
+            parser = pares_single_tree(tree)
+            parser_dict[tree] = parser
+        except:
+            continue
     tracker.parser_dict = parser_dict
     return tracker
 
