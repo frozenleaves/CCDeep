@@ -20,3 +20,4 @@ imagecodecs
 bitarray
 openpyxl
 trackpy
+shapely

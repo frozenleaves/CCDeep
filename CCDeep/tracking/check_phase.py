@@ -302,6 +302,24 @@ class TreeParser(object):
             for cell_node_index_g2 in range(g2_start_index, end_2):
                 cell_node_line[cell_node_index_g2].cell.phase = 'G2'
 
+    def parse_mitosis_error(self, lineage: dict, root: CellNode, lineage_index=None):
+        """如果没有匹配到分裂后的两个子细胞，会导致后续细胞全部处于M期，此时应该在一定时间内将其更正为G1"""
+        cell_node_line = lineage.get('cells')
+        m1_start = lineage.get('m1_start')
+        m2_start = lineage.get('m2_start')
+        m_count = 15
+        if m1_start is not None:
+            m_start = m1_start
+        elif m2_start is not None:
+            m_start = m2_start
+        else:
+            return
+        for index in range(m_start, len(cell_node_line)):
+            if cell_node_line[index].cell.phase == 'M':
+                m_count -= 1
+                if m_count < 0:
+                    cell_node_line[index].cell.phase = 'G1'
+
     def set_cell_id(self, lineage: dict, root: CellNode, linage_index):
         cell_node_line = lineage.get('cells')
         branch_id = linage_index
@@ -325,6 +343,7 @@ class TreeParser(object):
         self.parse_mitosis(lineage, root, linage_index)
         self.parse_s(lineage, root, linage_index)
         self.parse_g1_g2(lineage, root, linage_index)
+        self.parse_mitosis_error(lineage, root, linage_index)
         self.set_cell_id(lineage, root, linage_index)
 
     def parse_lineage_branch_id(self, lineage, branch_id):
@@ -400,7 +419,7 @@ def track_tree_to_table(tracker: Tracker, filepath):
                    node.cell.track_id, parent.cell.cell_id,
                    node.cell.center[1], node.cell.center[0],
                    node.cell.phase,
-                   None,None,None,None,None,None,None,None,None,None,None,
+                   None, None, None, None, None, None, None, None, None, None, None,
                    node.cell.phase]
             s = pd.Series(dict(zip(track_detail_columns_complete_pcnadeep, col)))
             series_list.append(s)
@@ -416,11 +435,12 @@ def track_tree_to_table(tracker: Tracker, filepath):
                 track_detail_dataframe = track_detail_dataframe.append(series, ignore_index=True)
             series_list_pcnadeep = generate_series_pcnadeep(cell_lineage)
             for series_pcnadeep in series_list_pcnadeep:
-                track_detail_dataframe_complete_pcnadeep = track_detail_dataframe_complete_pcnadeep.append(series_pcnadeep, ignore_index=True)
-    if os.path.exists(filepath):
-        fname = os.path.join(os.path.dirname(filepath), '(new)' + os.path.basename(filepath))
-    else:
-        fname = filepath
+                track_detail_dataframe_complete_pcnadeep = track_detail_dataframe_complete_pcnadeep.append(
+                    series_pcnadeep, ignore_index=True)
+    # if os.path.exists(filepath):
+    #     fname = os.path.join(os.path.dirname(filepath), '(new)' + os.path.basename(filepath))
+    # else:
+    fname = filepath
     track_detail_dataframe.to_csv(fname, index=False)
     track_detail_dataframe_complete_pcnadeep.to_csv(fname + 'pcnadeep.csv', index=False)
 

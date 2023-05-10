@@ -17,6 +17,7 @@ import time
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 
+import shapely
 from libtiff import TIFF
 
 sys.path.append('.')
@@ -330,13 +331,14 @@ class Match(object):
         """将值变换到区间[0, π/2]"""
         return _range[0] + (_range[1] - _range[0]) * x
 
-    def calcIoU(self, cell_1: Cell, cell_2: Cell):
+    def calcIoU_roughly(self, cell_1: Cell, cell_2: Cell):
         """
         计算两个细胞的交并比
         返回值范围: float(0-1)
         """
         rect1 = Rectangle(*cell_1.bbox)
         rect2 = Rectangle(*cell_2.bbox)
+
         if not rect1.isIntersect(rect2):
             return 0
         elif rect1.isInclude(rect2):
@@ -347,6 +349,28 @@ class Match(object):
             union = Rectangle(max(rect1.x_min, rect2.x_min), min(rect1.x_max, rect2.x_max),
                               max(rect1.y_min, rect2.y_min), min(rect1.y_max, rect2.y_max))
             return union.area / intersection.area
+
+    def calcIoU(self, cell_1: Cell, cell_2: Cell):
+        """
+        计算两个细胞的交并比
+        返回值范围: float(0-1)
+        """
+        poly1 = cell_1.polygon
+        poly2 = cell_2.polygon
+
+        # 计算两个多边形的交集
+        try:
+            intersection = poly1.intersection(poly2)
+            # 计算两个多边形的并集
+            union = poly1.union(poly2)
+        except shapely.errors.GEOSException:
+            return self.calcIoU_roughly(cell_1, cell_2)
+        if union.area == 0:
+            return 0
+        elif poly1.contains(poly2) or poly2.contains(poly1):
+            return 1
+        else:
+            return intersection.area / union.area
 
     def calcCosDistance(self, cell_1: Cell, cell_2: Cell):
         """
@@ -504,7 +528,7 @@ class Matcher(object):
         return matched
 
     def is_mitosis_start(self, pre_parent: Cell, last_leaves: List[Cell], area_size_t=1.8, iou_t=0.5):
-        """判断细胞是否进入M期，核心依据是细胞进入Mitosis的时候，体积会变大
+        """判断细胞是否进入M期，依据是细胞进入Mitosis的时候，体积会变大
         :returns 如果成功进入M期，返回包含最后一帧的G2和第一帧M的字典信息， 否则，返回False
         """
         match_score = {}
@@ -565,7 +589,7 @@ class Matcher(object):
         matched_candidates = self.match_duplicate_child(parent, candidates_child_list)
         checked_candidates = {}
         for i in matched_candidates:
-            if i.is_be_matched :
+            if i.is_be_matched:
                 if i.status.exist_mitosis_time < 50:
                     continue
             checked_candidates[i] = matched_candidates[i]
@@ -581,7 +605,7 @@ class Matcher(object):
                     raise MitosisError('The cell is too small to have cell division !')
                 # if self.matcher.calcAreaSimilar(cells[0], cells[1]) > area_t and self.matcher.compareShapeSimilar(
                 #         cells[0], cells[1]) < shape_t:
-                if self.matcher.calcAreaSimilar(cells[0], cells[1]) > area_t :
+                if self.matcher.calcAreaSimilar(cells[0], cells[1]) > area_t:
                     return cells, 'ACCURATE'
                 else:
                     # raise MitosisError("not enough candidates, after matched.")
@@ -615,8 +639,8 @@ class Matcher(object):
             result = {}
             # for cell in candidate_score_dict:
             #     score_dict = candidate_score_dict[cell]
-                # value =  score_dict['IoU'] * self.WEIGHT.get('IoU') + \
-                #        score_dict['shape'] * self.WEIGHT.get('shape') + score_dict['area'] * self.WEIGHT.get('area')
+            # value =  score_dict['IoU'] * self.WEIGHT.get('IoU') + \
+            #        score_dict['shape'] * self.WEIGHT.get('shape') + score_dict['area'] * self.WEIGHT.get('area')
             selected_cell = None
             max_iou = 0.0
             min_distance = 100
@@ -753,7 +777,6 @@ class Matcher(object):
         #     # no_filter_candidates.add_cell(predict_child_cell)
         #     return {'matched_cell': [(predict_child_cell, 'PREDICTED')], 'status': cell_track_status}
 
-
         # elif len(filtered_candidates) > 1:  # 有多个匹配项
         #     matched_result = []
         #     score_dict = {}
@@ -855,11 +878,11 @@ class Matcher(object):
                 self.add_child_node(tree, child_node, parent_node)
                 # child_node.branch_id = parent_node.branch_id
             else:
-            #     try:
-            #         assert len(child_cells) == 2
-            #     except AssertionError:
-            #         # self._match(predict_child, filtered_candidates, tree.status)
-            #         continue
+                #     try:
+                #         assert len(child_cells) == 2
+                #     except AssertionError:
+                #         # self._match(predict_child, filtered_candidates, tree.status)
+                #         continue
 
                 for cell in child_cells:
                     new_branch_id = tree.branch_id_distributor()
@@ -924,7 +947,6 @@ class Tracker(object):
         self.count = 0
         self.parser_dict = None
 
-
     def id_distributor(self):
         if self._available_id not in self._exist_tree_id:
             self._exist_tree_id.append(self._available_id)
@@ -970,7 +992,7 @@ class Tracker(object):
         else:
             im_rgb1 = cv2.cvtColor(convert_dtype(bg1), cv2.COLOR_GRAY2RGB)
         cv2.rectangle(im_rgb1, (bbox[2], bbox[0]), (bbox[3], bbox[1]),
-                      [0, 255, 0], 2)
+                      [0, 255, 0], 1)
 
         def get_str():
             raw = str(track_id)
@@ -983,8 +1005,8 @@ class Tracker(object):
             return raw
 
         text = get_str()
-        cv2.putText(im_rgb1, text, (bbox[3], bbox[1]), cv2.FONT_HERSHEY_COMPLEX,
-                    0.75, (255, 255, 255), 2)
+        cv2.putText(im_rgb1, text, (bbox[3], bbox[1]), cv2.FONT_HERSHEY_TRIPLEX,
+                    1, (255, 255, 255), 1)
 
         return im_rgb1
 
@@ -1089,7 +1111,7 @@ class Tracker(object):
         selected_cell = None
         max_iou = 0.0
         min_distance = 100
-        threshold = 0.5
+        threshold = 0.6
         iou_above_threshold = False
         # 遍历match字典中的每个cell和score_dict
         for cell, score_dict in candidate_score_dict.items():
@@ -1139,13 +1161,11 @@ class Tracker(object):
                         if match_result['IoU'] > 0.4:
                             rematch[may_parent] = match_result
                     if rematch:
-                        result = max(rematch, key=lambda k: rematch[k]['IoU'] + (1/rematch[k]['distance']))
+                        result = max(rematch, key=lambda k: rematch[k]['IoU'] + (1 / (rematch[k]['distance']+1e-5)))
                         # result = self.calc_weight(rematch)
                         if result.is_be_matched == 'INACCURATE':
                             current_trees = self.get_current_tree(result)
-                            print('len tree:   ',len(current_trees))
                             for t in current_trees:
-                                print(t.leaves())
                                 t.add_node(CellNode(cell), parent=CellNode(result))
                                 cell.set_match_status('ACCURATE')
                                 cell.is_accurate_matched = True
@@ -1189,24 +1209,27 @@ class Tracker(object):
             #     oldest_fe_object = self.fe_cache.popleft()
 
             end_time = time.time()
-            writer.writerow([index, f"{1/(end_time - start_time):.2f}"])
+            writer.writerow([index, f"{1 / (end_time - start_time + 1e-10):.2f}"])
             if range:
                 index += 1
                 if index > range:
                     break
         speed_f.close()
 
+        __filter_trees = [tree for tree in self.trees if len(tree.nodes) > 10]
+        del self.trees
+        self.trees = __filter_trees
+
     def track_tree_to_json(self, filepath):
         if not os.path.exists(filepath):
             os.makedirs(filepath)
-        fi = 0
         for i in self.trees:
             # jsf = rf'G:\20x_dataset\copy_of_xy_01\development-dir\track_tree\tree4\tree{fi}.json'
-            jsf = os.path.join(filepath, f'tree-{fi}.json')
+            jsf = os.path.join(filepath, f'tree-{i.track_id}.json')
             if os.path.exists(jsf):
                 os.remove(jsf)
             i.save2file(jsf)
-            fi += 1
+
 
     def visualize(self, background_filename_list, save_dir, tree_list):
 
@@ -1269,7 +1292,7 @@ class Tracker(object):
     def visualize_to_tif(self, background_mcy_image: str, output_tif_path, tree_list, xrange=None, single=False):
         def adjust_gamma(__image, gamma=1.0):
             image = convert_dtype(__image)
-            brighter_image = np.array(np.power((image / 255), 1/gamma) * 255, dtype=np.uint8)
+            brighter_image = np.array(np.power((image / 255), 1 / gamma) * 255, dtype=np.uint8)
             return brighter_image
 
         tif = readTif(background_mcy_image)
@@ -1280,7 +1303,7 @@ class Tracker(object):
             for img, _ in tif:
                 if index >= xrange:
                     break
-                img= adjust_gamma(img, gamma=1.5)
+                img = adjust_gamma(img, gamma=1.5)
                 images_dict[index] = img
                 index += 1
         else:
@@ -1336,10 +1359,10 @@ def get_cell_line_from_tree(tree: TrackingTree, dic_path: str, mcy_path: str, sa
         y0, y1, x0, x1 = cell.bbox
         mcy_img = mcy[cell.frame][y0: y1, x0: x1]
         dic_img = dic[cell.frame][y0: y1, x0: x1]
-        fname = str(tree.track_id) + '-' + str(cell.branch_id) + '-' + str(cell.frame) + '-' + str(cell.phase[0]) + '.tif'
+        fname = str(tree.track_id) + '-' + str(cell.branch_id) + '-' + str(cell.frame) + '-' + str(
+            cell.phase[0]) + '.tif'
         tifffile.imwrite(os.path.join(save_mcy, fname), convert_dtype(mcy_img))
         tifffile.imwrite(os.path.join(save_dic, fname), convert_dtype(dic_img))
-
 
         # break
 

@@ -607,6 +607,6 @@ if __name__ == '__main__':
     # plt.imshow(cv2.resize(ret[-1], (1024, 1024)), cmap='gray')
     # plt.show()
     # print(len(ret))
-    tif2png(r'E:\paper\evaluate_data\copy_of_1_xy10\mcy.tif', r'E:\paper\evaluate_data\copy_of_1_xy10\png')
+    tif2png(r'G:\paper\evaluate_data\MCF10A_copy11\sub1\mcy-sub1.tif', r'G:\paper\evaluate_data\MCF10A_copy11\sub1\png')
 
 

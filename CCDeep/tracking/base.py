@@ -7,9 +7,10 @@ from abc import ABC, abstractmethod
 import warnings
 from typing import List, Tuple
 from enum import Enum
-
+from shapely.geometry import Polygon
 import numpy as np
 from functools import lru_cache
+from numba import jit
 from matplotlib import pyplot as plt
 
 
@@ -68,6 +69,7 @@ class TreeStatus(object):
             cls._instances[key].__tracking_tree = None
             cls._instances[key].__init_flag = False
             cls._instances[key].enter_mitosis_threshold = 50
+            cls._instances[key].division_windows_len = 10
             cls._instances[key].__exit_mitosis_time = cls._instances[key].enter_mitosis_threshold
             # 从完成分裂退出mitosis开始，计数，10帧之内不可以再进入mitosis，即当此值小于10的时候，self.__enter_mitosis 不可为True
         return cls._instances[key]
@@ -94,6 +96,23 @@ class TreeStatus(object):
     def get_status(self, status_type):
         return self.status.get(status_type)
 
+    def check_division_window(self):
+        if self.division_windows_len > 0:
+            return True
+        return False
+
+    def reset_division_window(self):
+        self.division_windows_len = 10
+
+    def sub_division_window(self):
+        if self.division_windows_len > 0:
+            self.division_windows_len -= 1
+
+    def is_in_division_window(self):
+        if self.division_windows_len > 0:
+            return True
+        return False
+
     def enter_mitosis(self, frame):
         if self.__exit_mitosis_time >= self.enter_mitosis_threshold:
             self.__enter_mitosis = True
@@ -101,6 +120,7 @@ class TreeStatus(object):
             self.__exit_mitosis_time = 0
             self.__enter_mitosis_frame = frame
             self.__exit_mitosis_frame = None
+            self.reset_division_window()
 
     def exit_mitosis(self, frame):
         self.__enter_mitosis = False
@@ -144,6 +164,7 @@ class TreeStatus(object):
 
     def __repr__(self):
         return self.__str__()
+
 
 class CellStatus(TreeStatus):
     """记录细胞的状态，如果细胞参与过精确匹配，则将其排除在其他匹配候选项之外。
@@ -406,6 +427,7 @@ class Cell(object):
         self.frame = frame_index
         self.__parent = None  # 如果细胞发生分裂，则记录该细胞的父细胞的__id
         self.__move_speed = Vector(0, 0)
+        self.polygon = Polygon([xy for xy in zip(*self.position)])
 
         if flag is None:
             self.flag = 'cell'
@@ -440,10 +462,32 @@ class Cell(object):
     def update_speed(self, speed: Vector):
         self.__move_speed = speed
 
+    def polygon_centroid(self, vertex_coordinates):
+        x_coords = vertex_coordinates[0]
+        y_coords = vertex_coordinates[1]
+        n = len(x_coords)
+        area = 0.0
+        centroid_x = 0.0
+        centroid_y = 0.0
+
+        for i in range(n):
+            j = (i + 1) % n
+            cross_product = x_coords[i] * y_coords[j] - x_coords[j] * y_coords[i]
+            area += cross_product
+            centroid_x += (x_coords[i] + x_coords[j]) * cross_product
+            centroid_y += (y_coords[i] + y_coords[j]) * cross_product
+
+        area /= 2.0
+        centroid_x /= 6.0 * area
+        centroid_y /= 6.0 * area
+
+        return centroid_x, centroid_y
+
     @property
     @lru_cache(maxsize=None)
     def center(self):
-        return np.mean(self.position[0]), np.mean(self.position[1])
+        # return np.mean(self.position[0]), np.mean(self.position[1])
+        return self.polygon_centroid(self.position)
 
     @property
     @lru_cache(maxsize=None)

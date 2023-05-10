@@ -218,6 +218,8 @@ class FeatureExtractor(object):
             try:
                 all_x = region['shape_attributes']['all_points_x']
                 all_y = region['shape_attributes']['all_points_y']
+                all_x = [0 if i < 0 else i for i in all_x]
+                all_y = [0 if j < 0 else j for j in all_y]
                 phase = region['region_attributes']['phase']
                 cell = Cell(position=(all_x, all_y), phase=phase, frame_index=self.frame_index)
                 cell.set_region(region)

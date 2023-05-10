@@ -9,7 +9,7 @@ import tensorflow as tf
 
 sys.path.append('.')
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 if tf.config.list_physical_devices('GPU'):
     tf.config.experimental.set_memory_growth(tf.config.list_physical_devices("GPU")[0], enable=True)
@@ -138,4 +138,4 @@ if args.trackpcna:
         new_jsons = jsons
     logging.info(f"Tracking result will saved to {track_output}")
     logging.info('start tracking ...')
-    track.start_track(fjson=new_jsons, fpcna=pcna, fbf=bf, fout=track_output)
+    track.start_track(fjson=new_jsons, fpcna=pcna, fbf=bf, fout=track_output, image_width=1024, image_height=1024)
